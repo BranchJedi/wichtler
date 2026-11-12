@@ -1,0 +1,4 @@
+include:
+    - path: ./docker-compose.stack.yml
+      env_file:
+          - ./.env.docker

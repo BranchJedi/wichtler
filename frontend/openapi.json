@@ -1,0 +1,76 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Wichtler API",
+        "description": "Headless API der Wichtel-App.",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/health": {
+            "get": {
+                "tags": [
+                    "System"
+                ],
+                "summary": "Liveness and database check",
+                "operationId": "getHealth",
+                "responses": {
+                    "200": {
+                        "description": "API and database are reachable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResponse"
+                                }
+                            }
+                        }
+                    },
+                    "503": {
+                        "description": "Database is not reachable",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HealthResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "HealthResponse": {
+                "required": [
+                    "status",
+                    "database",
+                    "time"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "ok",
+                            "degraded"
+                        ]
+                    },
+                    "database": {
+                        "description": "Whether the database answered a trivial query.",
+                        "type": "boolean"
+                    },
+                    "time": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "System",
+            "description": "System"
+        }
+    ]
+}

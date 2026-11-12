@@ -1,0 +1,96 @@
+x-app-env: &app-env
+    APP_ENV: ${DOCKER_APP_ENV:-prod}
+    APP_DEBUG: ${DOCKER_APP_DEBUG:-0}
+    APP_SECRET: ${DOCKER_APP_SECRET:?Set DOCKER_APP_SECRET}
+    DATABASE_URL: "mysql://${DOCKER_DB_USER:?Set DOCKER_DB_USER}:${DOCKER_DB_PASSWORD:?Set DOCKER_DB_PASSWORD}@wichtler_db:3306/${DOCKER_DB_NAME:?Set DOCKER_DB_NAME}?serverVersion=11.8.0-MariaDB&charset=utf8mb4"
+    DEFAULT_URI: ${DOCKER_DEFAULT_URI:?Set DOCKER_DEFAULT_URI}
+    TRUSTED_PROXIES: ${DOCKER_TRUSTED_PROXIES:-REMOTE_ADDR}
+
+x-app-build: &app-build
+    context: .
+    dockerfile: Dockerfile
+
+services:
+    wichtler_app:
+        build: *app-build
+        image: wichtler-app:local
+        environment:
+            <<: *app-env
+        depends_on:
+            wichtler_db:
+                condition: service_healthy
+            wichtler_migrations:
+                condition: service_completed_successfully
+        # The Nginx Proxy Manager reaches the container as http://wichtler_app:80 through the
+        # external "wichtler-app" network. The host binding is loopback-only with a random port
+        # by default; set DOCKER_HTTP_BIND (e.g. 127.0.0.1:8089:80) for a fixed test port.
+        ports:
+            - "${DOCKER_HTTP_BIND:-127.0.0.1::80}"
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        networks:
+            - internal
+            - wichtler_app
+
+    wichtler_migrations:
+        build: *app-build
+        image: wichtler-app:local
+        command:
+            - /bin/sh
+            - -c
+            - |
+                for i in $$(seq 1 20); do
+                  if php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration; then
+                    exit 0
+                  fi
+                  echo "Migration attempt $$i failed, retrying in 2s..."
+                  sleep 2
+                done
+                echo "Migrations failed after retries."
+                exit 1
+        environment:
+            <<: *app-env
+        depends_on:
+            wichtler_db:
+                condition: service_healthy
+        restart: "no"
+        security_opt:
+            - no-new-privileges:true
+        networks:
+            - internal
+
+    wichtler_db:
+        image: mariadb:11.8
+        environment:
+            MARIADB_ROOT_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD:?Set DOCKER_DB_ROOT_PASSWORD}
+            MARIADB_DATABASE: ${DOCKER_DB_NAME:?Set DOCKER_DB_NAME}
+            MARIADB_USER: ${DOCKER_DB_USER:?Set DOCKER_DB_USER}
+            MARIADB_PASSWORD: ${DOCKER_DB_PASSWORD:?Set DOCKER_DB_PASSWORD}
+        volumes:
+            - db_data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            interval: 5s
+            timeout: 5s
+            retries: 20
+            start_period: 10s
+        restart: unless-stopped
+        security_opt:
+            - no-new-privileges:true
+        networks:
+            - internal
+
+volumes:
+    db_data:
+        name: "${COMPOSE_PROJECT_NAME:-symfony-wichtler}_db_data"
+
+networks:
+    # Private network for app <-> database traffic. No route to the outside.
+    internal:
+        name: wichtler-internal
+        internal: true
+    # Shared with the Nginx Proxy Manager. Create once: docker network create wichtler-app
+    wichtler_app:
+        external: true
+        name: wichtler-app

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+## Description: Dump the OpenAPI specification from Symfony and regenerate the orval client
+## Usage: api-generate
+## Example: ddev api-generate
+
+set -euo pipefail
+
+cd /var/www/html/backend
+php bin/console nelmio:apidoc:dump --format=json > ../frontend/openapi.json
+cd ../frontend
+npx orval

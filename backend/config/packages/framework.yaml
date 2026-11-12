@@ -1,0 +1,17 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+
+    # The API is stateless, no sessions.
+    session: false
+
+    # The app runs behind a reverse proxy (ddev router, Nginx Proxy Manager).
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port']
+
+    #esi: true
+    #fragments: true
+
+when@test:
+    framework:
+        test: true
