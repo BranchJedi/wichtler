@@ -2,27 +2,47 @@ security:
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
-    # Replaced by the User entity provider and JWT authentication in stage 2 (accounts).
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
 
     firewalls:
         dev:
             pattern: ^/(_profiler|_wdt)(/|$)
             security: false
-        main:
-            lazy: true
+        api:
+            pattern: ^/api
             stateless: true
-            provider: users_in_memory
+            provider: app_user_provider
+            entry_point: jwt
+            json_login:
+                check_path: /api/auth/login
+                username_path: username
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+            # Failed password attempts only; limits in config/packages/rate_limiter.yaml.
+            login_throttling:
+                limiter: App\Security\LoginRateLimiter
+            jwt: ~
+            refresh_jwt:
+                check_path: /api/auth/refresh
+                invalidate_token_on_logout: true
+            logout:
+                path: /api/auth/logout
+                delete_cookies:
+                    BEARER: { path: /api }
 
     # Note: Only the *first* matching rule is applied
-    access_control: []
-
-when@prod:
-    security:
-        access_control:
-            # Swagger UI and the OpenAPI document are reserved for the Wichtler admin in production.
-            - { path: ^/api/doc, roles: ROLE_ADMIN }
+    access_control:
+        - { path: ^/api/auth/(login|register|refresh|logout)$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/health$, roles: PUBLIC_ACCESS }
+        # Open locally, reserved for the Wichtler admin in production (see config/services.yaml).
+        - { path: ^/api/doc, roles: '%app.api_doc_role%' }
+        - { path: ^/api/admin/, roles: ROLE_ADMIN }
+        - { path: ^/api, roles: ROLE_USER }
 
 when@test:
     security:

@@ -2,7 +2,7 @@
 
 Wichtel-App für Weihnachten: Gruppen erstellen, Teilnehmer einladen, Wünsche erfassen, fair und geheim auslosen.
 
-Stand: 12.11.2026 · Status: Entwurf
+Stand: 13.11.2026 · Status: umgesetzt (Etappen 1 bis 8)
 
 ---
 
@@ -135,8 +135,11 @@ Budget im UI: ein Range-Slider mit zwei Griffen (Min/Max), über einen Schalter 
 - Registrierung: Vorname, Nachname, Username, Passwort, Passwort-Wiederholung. Keine E-Mail.
 - Login: Username + Passwort.
 - Technik: LexikJWT wie im `symfony-dart-helper`, Access-Token (15 min) und Refresh-Token (14 Tage) als `HttpOnly`-, `Secure`-, `SameSite=Strict`-Cookies. Kein Token im JavaScript-Speicher.
-- Login und Registrierung sind per `symfony/rate-limiter` gedrosselt (pro IP und pro Username), weil es keine E-Mail-Verifikation gibt.
-- **Vergessene Zugangsdaten:** Der Wichtler-Admin sucht den User in der Benutzerliste (nach Name), sieht den Username, kann ihn ändern und ein temporäres Passwort setzen. Dabei werden alle Refresh-Tokens des Users gelöscht und `mustChangePassword` gesetzt. Die Übergabe des temporären Passworts geschieht ausserhalb der App.
+- Login und Registrierung sind per `symfony/rate-limiter` gedrosselt, weil es keine E-Mail-Verifikation gibt: 5 falsche Passwörter pro Username und Adresse, 25 pro Adresse über alle Usernames (je 15 Minuten), 30 Registrierungen pro Adresse und Stunde. Gezählt werden nur echte Passwort-Fehlversuche, nicht fehlgeschlagene Sitzungs-Erneuerungen oder abgelaufene Tokens.
+- **Vergessene Zugangsdaten:** Der Wichtler-Admin sucht den User auf der Seite «Benutzer» (nach Name oder Username), sieht den Username und kann ihn ändern. Für ein vergessenes Passwort erzeugt der Server ein temporäres Passwort und zeigt es dem Admin genau einmal an; gespeichert wird nur der Hash. Der User wird dabei auf allen Geräten sofort abgemeldet und `mustChangePassword` gesetzt. Die Übergabe des temporären Passworts geschieht ausserhalb der App.
+- **Erzwungener Passwortwechsel:** Solange `mustChangePassword` gesetzt ist, lässt die API nur das eigene Profil, den Passwortwechsel und das Abmelden zu; alles andere beantwortet sie mit `403`.
+- **Sofortiges Abmelden:** Jedes Zugriffstoken trägt die Sitzungsversion des Users. Passwortwechsel, Reset und Username-Änderung erhöhen sie, ältere Tokens werden dann sofort abgelehnt und nicht erst nach Ablauf.
+- **Veraltete Cookies:** Login, Registrierung, Erneuerung und Abmelden ignorieren ein vorhandenes Sitzungs-Cookie. So verhindert ein ungültig gewordenes Cookie nicht die erneute Anmeldung.
 
 ---
 
@@ -186,7 +189,7 @@ Link: `https://<host>/einladung/<inviteToken>`. Der Gruppenadmin kann ihn kopier
 | **2. User existiert, angemeldet** | Direkt das Einladungs-Overlay. |
 | **3. Kein User** | Von der Login-Seite auf «Registrieren». Nach erfolgreicher Registrierung ist der User angemeldet und sieht das Einladungs-Overlay. |
 
-Technisch: Die SPA merkt sich den Token in `sessionStorage`, bis der User angemeldet ist. Die App kann Szenario 1 und 3 nicht unterscheiden, deshalb zeigt die Login-Seite beide Wege an.
+Technisch: Die Einladungsseite liegt im angemeldeten Bereich. Gäste werden zum Login umgeleitet, das Ziel reist im Verlaufseintrag des Browsers mit (auch über den Wechsel zur Registrierung und ein Neuladen hinweg) und wird nach der Anmeldung wieder geöffnet. Die App kann Szenario 1 und 3 nicht unterscheiden, deshalb zeigt die Login-Seite beide Wege an.
 
 Das Einladungs-Overlay zeigt Titel, Jahr, Wichteldatum, Budget, Gruppenadmin und Anzahl Teilnehmer, mit «Beitreten» und «Abbrechen». Die Vorschau ist nur angemeldet abrufbar, anonyme Besucher erfahren nichts über die Gruppe. Wer schon Mitglied ist, landet direkt in der Gruppe.
 
@@ -237,7 +240,7 @@ Verhalten:
 
 - Die API lehnt einen Ausschluss mit `422` ab, wenn er Regel A oder B verletzt. Meldung bei Regel B bewusst neutral: «Diese Person kann nicht weiter ausgeschlossen werden.»
 - Ausschlüsse sind nur für den Ersteller sichtbar.
-- **Schrumpft die Gruppe** (Teilnehmer entfernt, inaktiv gesetzt, ausgetreten), sinkt `N`. Verletzen bestehende Ausschlüsse danach eine Regel, werden die jeweils neuesten automatisch gelöscht, bis beide Regeln wieder gelten. Betroffene sehen beim nächsten Öffnen der Gruppe einen Hinweis. So entsteht nie ein Zustand, den nur ein unbekannter Dritter auflösen könnte.
+- **Schrumpft die Gruppe** (Teilnehmer entfernt, inaktiv gesetzt, ausgetreten), sinkt `N`. Verletzen bestehende Ausschlüsse danach eine Regel, werden die jeweils neuesten automatisch gelöscht, bis beide Regeln wieder gelten. Betroffene sehen in der Gruppe einen Hinweis, bis sie ihn quittieren. Wird ein Teilnehmer inaktiv gesetzt, entfallen auch seine eigenen Ausschlüsse und die Ausschlüsse anderer auf ihn. So entsteht nie ein Zustand, den nur ein unbekannter Dritter auflösen könnte.
 
 ### 6.3 Algorithmus
 
@@ -273,7 +276,8 @@ Die App weist darauf hin:
 - **Gruppenübersicht:** zeigt nur den Status «Ausgelost», keine Namen. Der Listen-Endpoint enthält keine Zuteilungsdaten.
 - **Gruppenseite:** Karte «Dein Wichtel» mit geblurrtem Platzhalter und Button «Wichtel aufdecken». Erst der Klick lädt die Zuteilung vom Server. Name und Wünsche des Wichtels werden gemeinsam aufgedeckt und mit «Verbergen» gemeinsam wieder geblurrt. Beim Verlassen der Seite wird der Zustand verworfen. Vor dem Klick steht der Name weder im DOM noch in einer Netzwerkantwort.
 - **Gruppenadmin:** hat keinen Endpoint, der fremde Zuteilungen liefert. Er sieht wie jeder Teilnehmer nur die eigene. Die Prüfung erfolgt serverseitig in einem Symfony-Voter, nicht im Frontend.
-- **Wichtler-Admin:** sieht in jeder Gruppe zusätzlich die Karte «Alle Zuteilungen». Jede Zeile ist einzeln geblurrt und wird einzeln aufgedeckt.
+- **Wichtler-Admin:** sieht in jeder Gruppe zusätzlich die Karte «Alle Zuteilungen». Jede Zeile ist einzeln geblurrt und wird einzeln aufgedeckt; auch hier lädt erst der Klick die jeweilige Zuteilung.
+- Antworten mit einer Zuteilung tragen `Cache-Control: no-store`.
 - Logs und Fehlermeldungen enthalten nie Zuteilungen.
 
 Die Zuteilungen liegen im Klartext in der Datenbank, weil der Wichtler-Admin sie einsehen können muss. Wer Datenbankzugriff hat, kann sie lesen.
@@ -309,7 +313,7 @@ Layout mobile-first, da Share-Links meist auf dem Handy geöffnet werden.
 
 ## 9. API
 
-Basis `/api`, JSON, Fehler als `application/problem+json`. Auszug:
+Basis `/api`, JSON, Fehler als `application/problem+json`. Ablehnungen, die für den Benutzer formuliert sind (z. B. «Die Gruppe ist ausgelost»), stehen im Feld `detail` und werden auch im Produktivbetrieb ausgeliefert; alle anderen Fehlertexte bleiben dort verborgen. Auszug:
 
 | Methode | Pfad | Zweck | Zugriff |
 |---|---|---|---|
@@ -333,13 +337,14 @@ Basis `/api`, JSON, Fehler als `application/problem+json`. Auszug:
 | PATCH, DELETE | `/groups/{id}/wishes/{wishId}` | eigenen Wunsch ändern | Besitzer |
 | GET | `/groups/{id}/exclusions` | eigene Ausschlüsse, `N`, Restkontingent | Teilnehmer |
 | PUT, DELETE | `/groups/{id}/exclusions/{memberId}` | Ausschluss setzen/entfernen | Teilnehmer |
-| GET | `/groups/{id}/draw/status` | Checkliste, fehlende Wünsche pro Teilnehmer | Gruppenadmin |
+| DELETE | `/groups/{id}/exclusions/notice` | Hinweis «Ausschlüsse wurden entfernt» quittieren | Teilnehmer |
+| GET | `/groups/{id}/draw/status` | Checkliste, fehlende Wünsche pro Teilnehmer, ob es Ausschlüsse gibt | Gruppenadmin |
 | POST, DELETE | `/groups/{id}/draw` | auslosen, Auslosung löschen | Gruppenadmin |
 | GET | `/groups/{id}/draw/my-assignment` | eigener Wichtel mit Wünschen | Teilnehmer |
-| GET | `/groups/{id}/draw/assignments` | alle Zuteilungen | **nur** Wichtler-Admin |
+| GET | `/groups/{id}/draw/assignments/{memberId}` | Zuteilung eines Teilnehmers, einzeln abgerufen | **nur** Wichtler-Admin |
 | GET | `/admin/users` | Benutzerliste, Suche | Wichtler-Admin |
 | PATCH | `/admin/users/{id}` | Name, Username ändern | Wichtler-Admin |
-| POST | `/admin/users/{id}/reset-password` | temporäres Passwort setzen | Wichtler-Admin |
+| POST | `/admin/users/{id}/reset-password` | temporäres Passwort erzeugen (wird einmal zurückgegeben) | Wichtler-Admin |
 
 «Gruppenadmin» schliesst den Wichtler-Admin überall ein.
 
@@ -373,11 +378,14 @@ symfony-wichtler/
 │   ├── orval.config.ts
 │   └── src/api/        generiert, nicht von Hand editieren
 ├── docker/             entrypoint.sh, Apache-Konfiguration
+├── e2e/                Browser-Abläufe gegen eine laufende Instanz
 ├── .ddev/
 ├── Dockerfile
 ├── docker-compose.yml
 ├── docker-compose.stack.yml
 ├── .env.docker.example
+├── README.md           Entwicklung und Tests
+├── DOCKER.md           Betrieb
 └── docs/KONZEPT.md
 ```
 
@@ -445,14 +453,17 @@ docker compose down                  # stoppen
 - Autorisierung ausschliesslich serverseitig über Voter (`GROUP_VIEW`, `GROUP_MANAGE`, `DRAW_VIEW_ALL`, …)
 - Argon2id, Rate-Limiting, Cookies `HttpOnly`/`Secure`/`SameSite=Strict`
 - Share-Token mit 256 Bit Zufall, neu generierbar, nach der Auslosung wertlos
-- Security-Header (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`) in der Apache-Konfiguration
+- Security-Header in der Apache-Konfiguration: eine Content-Security-Policy ohne Inline-Skripte für die App, `default-src 'none'` für API-Antworten, dazu `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy` und HSTS für Anfragen über HTTPS
+- Swagger UI wird aus der App selbst ausgeliefert, nicht von einem CDN
+- Anfragen sind auf 1 MB begrenzt
 - Wunsch-URLs nur `http(s)`, Links mit `rel="noopener noreferrer"`
 
 ### 10.7 Tests
 
 - **Unit:** `DrawService` (nie Selbstziehung, Ausschlüsse eingehalten, statistischer Test auf Gleichverteilung bei kleinen `n`), Hopcroft-Karp, Ausschluss-Validierung und Bereinigung
 - **Funktional (API):** Berechtigungsmatrix aus 5.5, insbesondere «Gruppenadmin erhält nie fremde Zuteilungen», Zustandssperren aus 5.2, die drei Share-Link-Szenarien
-- **Frontend:** Komponententests für Blur/Reveal und den Einladungsablauf
+- **Frontend (Vitest):** Blur/Reveal, die Weiterleitungen des Einladungsablaufs, Fehleranzeige, Formatierung
+- **Browser-Abläufe (`e2e/`):** alle Hauptabläufe in einem echten Chrome gegen den Docker-Stack, inklusive Prüfung auf Verstösse gegen die Content-Security-Policy
 
 ---
 

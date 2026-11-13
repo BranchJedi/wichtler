@@ -5,6 +5,9 @@ x-app-env: &app-env
     DATABASE_URL: "mysql://${DOCKER_DB_USER:?Set DOCKER_DB_USER}:${DOCKER_DB_PASSWORD:?Set DOCKER_DB_PASSWORD}@wichtler_db:3306/${DOCKER_DB_NAME:?Set DOCKER_DB_NAME}?serverVersion=11.8.0-MariaDB&charset=utf8mb4"
     DEFAULT_URI: ${DOCKER_DEFAULT_URI:?Set DOCKER_DEFAULT_URI}
     TRUSTED_PROXIES: ${DOCKER_TRUSTED_PROXIES:-REMOTE_ADDR}
+    JWT_SECRET_KEY: /var/www/html/config/jwt/private.pem
+    JWT_PUBLIC_KEY: /var/www/html/config/jwt/public.pem
+    JWT_PASSPHRASE: ${DOCKER_JWT_PASSPHRASE:?Set DOCKER_JWT_PASSPHRASE}
 
 x-app-build: &app-build
     context: .
@@ -32,6 +35,10 @@ services:
         networks:
             - internal
             - wichtler_app
+        volumes:
+            # Signing keys are generated on first start and must survive restarts,
+            # otherwise every session would be invalidated.
+            - jwt_keys:/var/www/html/config/jwt
 
     wichtler_migrations:
         build: *app-build
@@ -42,7 +49,10 @@ services:
             - |
                 for i in $$(seq 1 20); do
                   if php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration; then
-                    exit 0
+                    # Expired refresh tokens are never used again; drop them on every start.
+                    php bin/console gesdinet:jwt:clear --no-interaction || true
+                    # Creates user 1 on the first start, does nothing afterwards.
+                    exec php bin/console app:admin:seed
                   fi
                   echo "Migration attempt $$i failed, retrying in 2s..."
                   sleep 2
@@ -51,6 +61,8 @@ services:
                 exit 1
         environment:
             <<: *app-env
+            ADMIN_USERNAME: ${DOCKER_ADMIN_USERNAME:?Set DOCKER_ADMIN_USERNAME}
+            ADMIN_PASSWORD: ${DOCKER_ADMIN_PASSWORD:?Set DOCKER_ADMIN_PASSWORD}
         depends_on:
             wichtler_db:
                 condition: service_healthy
@@ -84,6 +96,8 @@ services:
 volumes:
     db_data:
         name: "${COMPOSE_PROJECT_NAME:-symfony-wichtler}_db_data"
+    jwt_keys:
+        name: "${COMPOSE_PROJECT_NAME:-symfony-wichtler}_jwt_keys"
 
 networks:
     # Private network for app <-> database traffic. No route to the outside.

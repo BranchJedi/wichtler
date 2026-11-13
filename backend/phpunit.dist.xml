@@ -17,6 +17,11 @@
         <!-- ddev exports APP_ENV=dev as a real environment variable, which would otherwise win -->
         <env name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
+        <!-- Tests must not pick up the admin credentials ddev exports for the local seed -->
+        <server name="ADMIN_USERNAME" value="" force="true" />
+        <server name="ADMIN_PASSWORD" value="" force="true" />
+        <env name="ADMIN_USERNAME" value="" force="true" />
+        <env name="ADMIN_PASSWORD" value="" force="true" />
     </php>
 
     <testsuites>

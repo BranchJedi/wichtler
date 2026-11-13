@@ -3,8 +3,103 @@ nelmio_api_doc:
         openapi: 3.1.0
         info:
             title: Wichtler API
-            description: Headless API der Wichtel-App.
-            version: 0.1.0
+            description: |
+                Headless API der Wichtel-App.
+
+                Die Anmeldung läuft über HttpOnly-Cookies: `BEARER` (JWT, 15 Minuten) und
+                `refresh_token` (14 Tage, einmal verwendbar). Beide setzt der Server.
+            version: 0.2.0
+        components:
+            securitySchemes:
+                cookieAuth:
+                    type: apiKey
+                    in: cookie
+                    name: BEARER
+            schemas:
+                ProblemDetails:
+                    type: object
+                    required: [type, title, status]
+                    properties:
+                        type: { type: string }
+                        title: { type: string }
+                        status: { type: integer }
+                        detail: { type: string }
+                        violations:
+                            type: array
+                            items:
+                                type: object
+                                required: [propertyPath, title]
+                                properties:
+                                    propertyPath: { type: string }
+                                    title: { type: string }
+                AuthError:
+                    type: object
+                    required: [code, message]
+                    properties:
+                        code: { type: integer }
+                        message: { type: string }
+                LoginRequest:
+                    type: object
+                    required: [username, password]
+                    properties:
+                        username: { type: string }
+                        password: { type: string, format: password }
+        security:
+            - cookieAuth: []
+        # These three endpoints are handled by the security firewall, not by controllers.
+        paths:
+            /api/auth/login:
+                post:
+                    operationId: login
+                    summary: Sign in with username and password
+                    tags: [Auth]
+                    security: []
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema: { $ref: '#/components/schemas/LoginRequest' }
+                    responses:
+                        '200':
+                            description: Signed in. Sets the BEARER and refresh_token cookies.
+                            content:
+                                application/json:
+                                    schema: { $ref: '#/components/schemas/UserResponse' }
+                        '401':
+                            description: Wrong credentials, or too many failed attempts
+                            content:
+                                application/json:
+                                    schema: { $ref: '#/components/schemas/AuthError' }
+            /api/auth/refresh:
+                post:
+                    operationId: refreshSession
+                    summary: Renew the session with the refresh_token cookie
+                    tags: [Auth]
+                    security: []
+                    responses:
+                        '200':
+                            description: Session renewed. Sets new BEARER and refresh_token cookies.
+                            content:
+                                application/json:
+                                    schema: { $ref: '#/components/schemas/UserResponse' }
+                        '401':
+                            description: Refresh token missing, expired or already used
+                            content:
+                                application/json:
+                                    schema: { $ref: '#/components/schemas/AuthError' }
+            /api/auth/logout:
+                post:
+                    operationId: logout
+                    summary: Sign out and clear the session cookies
+                    tags: [Auth]
+                    security: []
+                    responses:
+                        '204':
+                            description: Signed out
+    # Serve Swagger UI from this app (public/bundles) instead of a public CDN: no third party
+    # learns who opens the documentation, and it works without internet access.
+    html_config:
+        assets_mode: bundle
     areas:
         default:
             path_patterns:

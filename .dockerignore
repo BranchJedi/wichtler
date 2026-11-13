@@ -16,6 +16,7 @@ backend/.phpunit.cache
 backend/.env.test
 backend/phpunit.dist.xml
 backend/public/bundles
+backend/config/jwt
 
 frontend/node_modules
 frontend/dist

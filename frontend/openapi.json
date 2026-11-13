@@ -2,10 +2,1442 @@
     "openapi": "3.1.0",
     "info": {
         "title": "Wichtler API",
-        "description": "Headless API der Wichtel-App.",
-        "version": "0.1.0"
+        "description": "Headless API der Wichtel-App.\n\nDie Anmeldung l\u00e4uft \u00fcber HttpOnly-Cookies: `BEARER` (JWT, 15 Minuten) und\n`refresh_token` (14 Tage, einmal verwendbar). Beide setzt der Server.\n",
+        "version": "0.2.0"
     },
     "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign in with username and password",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Signed in. Sets the BEARER and refresh_token cookies.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Wrong credentials, or too many failed attempts",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/auth/refresh": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Renew the session with the refresh_token cookie",
+                "operationId": "refreshSession",
+                "responses": {
+                    "200": {
+                        "description": "Session renewed. Sets new BEARER and refresh_token cookies.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Refresh token missing, expired or already used",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Sign out and clear the session cookies",
+                "operationId": "logout",
+                "responses": {
+                    "204": {
+                        "description": "Signed out"
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/groups/{id}/exclusions/notice": {
+            "delete": {
+                "tags": [
+                    "Exclusions"
+                ],
+                "summary": "Acknowledge the hint that exclusions were removed",
+                "operationId": "dismissExclusionNotice",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Own exclusions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExclusionStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or participant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user does not take part, or the group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/members/me": {
+            "delete": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Leave a group",
+                "description": "Not possible for the group admin and not after the draw.",
+                "operationId": "leaveGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Left the group"
+                    },
+                    "409": {
+                        "description": "The group has been drawn, or the current user is its group admin or not a member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Find users by name or username",
+                "operationId": "listUsers",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Words that have to occur in first name, last name or username. Empty lists everyone.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": ""
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "At most 100 users, by name",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AdminUserResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not the Wichtler admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users/{id}": {
+            "patch": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Change a user's name and username",
+                "description": "Changing the username signs the user out everywhere; they sign in again with the new one.",
+                "operationId": "updateUser",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProfileRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AdminUserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The Wichtler admin edits the own account in the profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not the Wichtler admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/admin/users/{id}/reset-password": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Give a user a temporary password",
+                "description": "The server generates the password and returns it once. The user is signed out everywhere and has to choose a new password after signing in with it.",
+                "operationId": "resetUserPassword",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The temporary password",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TemporaryPasswordResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The Wichtler admin changes the own password in the profile",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not the Wichtler admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Create an account and sign in",
+                "description": "Sets the BEARER and refresh_token cookies like a login.",
+                "operationId": "register",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Account created, user is signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many registrations from this address",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/groups/{id}/draw/status": {
+            "get": {
+                "tags": [
+                    "Draw"
+                ],
+                "summary": "What is still missing before the group can be drawn",
+                "operationId": "getDrawStatus",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The checklist",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DrawStatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/draw": {
+            "post": {
+                "tags": [
+                    "Draw"
+                ],
+                "summary": "Draw the group",
+                "description": "Picks one assignment uniformly at random from all valid ones. Afterwards members, exclusions and the rules of the group are locked, and unanswered invitations lapse. The response never contains the result.",
+                "operationId": "startDraw",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The drawn group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Already drawn, not ready, or no assignment could be found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Draw"
+                ],
+                "summary": "Delete the draw",
+                "description": "Removes all assignments and unlocks the group again. Participants who already looked at their result know the old one.",
+                "operationId": "deleteDraw",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The group, no longer drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has not been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/draw/my-assignment": {
+            "get": {
+                "tags": [
+                    "Draw"
+                ],
+                "summary": "Who the current user gives a present to, with that person's wishes",
+                "description": "The app requests this only when the user chooses to reveal it.",
+                "operationId": "getMyAssignment",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The own assignment",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssignmentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Not drawn yet, or the current user did not take part in the draw",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/draw/assignments/{memberId}": {
+            "get": {
+                "tags": [
+                    "Draw"
+                ],
+                "summary": "Who a given participant gives a present to",
+                "description": "Wichtler admin only. One participant per request, so nothing is transferred before it is revealed.",
+                "operationId": "getAssignmentOfMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The assignment of that participant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AssignmentResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has not been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/exclusions": {
+            "get": {
+                "tags": [
+                    "Exclusions"
+                ],
+                "summary": "The current user's own exclusions and how many are allowed",
+                "operationId": "getMyExclusions",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Own exclusions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExclusionStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or participant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user does not take part, or the group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/exclusions/{memberId}": {
+            "put": {
+                "tags": [
+                    "Exclusions"
+                ],
+                "summary": "Exclude a participant from one's own draw",
+                "description": "Refused when the current user has reached the limit, or the participant is already excluded by as many others as the limit allows.",
+                "operationId": "excludeMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Own exclusions after the change",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExclusionStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "One of the two limits would be exceeded",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or participant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user does not take part, or the group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Exclusions"
+                ],
+                "summary": "Take back an exclusion",
+                "operationId": "includeMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Own exclusions after the change",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ExclusionStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or participant",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user does not take part, or the group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Groups of the current user, or all groups for the Wichtler admin",
+                "operationId": "listGroups",
+                "parameters": [
+                    {
+                        "name": "scope",
+                        "in": "query",
+                        "description": "\"all\" is reserved for the Wichtler admin.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "mine",
+                            "enum": [
+                                "mine",
+                                "all"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Groups, newest event first",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/GroupResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "scope=all without being the Wichtler admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Create a group. The creator becomes its group admin and first participant.",
+                "operationId": "createGroup",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GroupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The new group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}": {
+            "get": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "One group",
+                "operationId": "getGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Delete a group",
+                "description": "Refused once the group has been drawn; the draw has to be deleted first. This also holds for the Wichtler admin.",
+                "operationId": "deleteGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "403": {
+                        "description": "Not the group admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Groups"
+                ],
+                "summary": "Edit a group",
+                "description": "Expects the complete group. After the draw only title, description and event date may change.",
+                "operationId": "updateGroup",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/GroupRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not the group admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The draw has locked one of the changed fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/health": {
             "get": {
                 "tags": [
@@ -36,10 +1468,1878 @@
                     }
                 }
             }
+        },
+        "/api/invitations": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Invitations by username the current user has not answered yet",
+                "operationId": "listInvitations",
+                "responses": {
+                    "200": {
+                        "description": "Pending invitations",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/InvitationResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invitations/{memberId}/accept": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Join the group of an invitation by username",
+                "operationId": "acceptInvitation",
+                "parameters": [
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The joined group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such pending invitation for the current user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invitations/{memberId}/decline": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Decline an invitation by username",
+                "operationId": "declineInvitation",
+                "parameters": [
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Declined"
+                    },
+                    "404": {
+                        "description": "No such pending invitation for the current user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invite-links/{token}": {
+            "get": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "What a share link invites to",
+                "description": "Requires a session, so anonymous visitors learn nothing about the group.",
+                "operationId": "previewInviteLink",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The group behind the link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvitationResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unknown, replaced or expired link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invite-links/{token}/accept": {
+            "post": {
+                "tags": [
+                    "Invitations"
+                ],
+                "summary": "Join a group through its share link",
+                "description": "Succeeds without effect for users who are in the group already.",
+                "operationId": "acceptInviteLink",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The joined group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GroupResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Unknown, replaced or expired link",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Me"
+                ],
+                "summary": "The signed-in user",
+                "operationId": "getMe",
+                "responses": {
+                    "200": {
+                        "description": "The signed-in user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Me"
+                ],
+                "summary": "Change name and username",
+                "description": "Renews the session cookies, because the tokens carry the username.",
+                "operationId": "updateMe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProfileRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated user",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/me/password": {
+            "put": {
+                "tags": [
+                    "Me"
+                ],
+                "summary": "Change the password",
+                "description": "Signs out every other device and renews the session cookies of this one.",
+                "operationId": "changeMyPassword",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePasswordRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/members": {
+            "get": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Members of a group",
+                "description": "Pending invitations are only listed for the group admin.",
+                "operationId": "listMembers",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Members",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MemberResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Invite a user by username",
+                "description": "The user has to confirm the invitation before taking part.",
+                "operationId": "inviteMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InviteByUsernameRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The pending invitation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemberResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Unknown username, or already in the group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/members/{memberId}": {
+            "delete": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Remove a participant or withdraw an invitation",
+                "operationId": "removeMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Removed"
+                    },
+                    "409": {
+                        "description": "The group has been drawn, or the member is the group admin",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Mark a participant as inactive or active",
+                "description": "Inactive participants stay listed but are not drawn.",
+                "operationId": "updateMember",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "memberId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateMemberRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MemberResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has been drawn, the member is the group admin, or has not joined yet",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/invite-link": {
+            "get": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "The current share link of a group",
+                "operationId": "getInviteLink",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The share link secret",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InviteLinkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Members"
+                ],
+                "summary": "Create a new share link",
+                "description": "The previous link stops working immediately.",
+                "operationId": "regenerateInviteLink",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The new share link secret",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InviteLinkResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The group has been drawn",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not allowed for this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or member",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/wishes": {
+            "get": {
+                "tags": [
+                    "Wishes"
+                ],
+                "summary": "The current user's own wishes in this group",
+                "operationId": "listMyWishes",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Own wishes, oldest first",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WishResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user has not joined this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Wishes"
+                ],
+                "summary": "Add a wish",
+                "operationId": "createWish",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WishRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The new wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WishResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Not a member, or the wish list is full",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/groups/{id}/wishes/{wishId}": {
+            "delete": {
+                "tags": [
+                    "Wishes"
+                ],
+                "summary": "Delete one of the own wishes",
+                "description": "After the draw a wish can only be deleted while the minimum number of wishes stays met.",
+                "operationId": "deleteWish",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "wishId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Deleted"
+                    },
+                    "409": {
+                        "description": "Not a member, or the draw requires this many wishes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "Wishes"
+                ],
+                "summary": "Edit one of the own wishes",
+                "description": "Expects the complete wish. Allowed after the draw as well.",
+                "operationId": "updateWish",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    },
+                    {
+                        "name": "wishId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "pattern": "\\d+"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WishRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "The updated wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WishResponse"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The current user has not joined this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Not signed in",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AuthError"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Not a member of this group",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No such group or wish",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProblemDetails"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "ProblemDetails": {
+                "required": [
+                    "type",
+                    "title",
+                    "status"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "integer"
+                    },
+                    "detail": {
+                        "type": "string"
+                    },
+                    "violations": {
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "propertyPath",
+                                "title"
+                            ],
+                            "properties": {
+                                "propertyPath": {
+                                    "type": "string"
+                                },
+                                "title": {
+                                    "type": "string"
+                                }
+                            },
+                            "type": "object"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AuthError": {
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "LoginRequest": {
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateProfileRequest": {
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "username"
+                ],
+                "properties": {
+                    "firstName": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    },
+                    "username": {
+                        "type": "string",
+                        "default": ""
+                    }
+                },
+                "type": "object"
+            },
+            "RegisterRequest": {
+                "required": [
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "password"
+                ],
+                "properties": {
+                    "firstName": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    },
+                    "lastName": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 80
+                    },
+                    "username": {
+                        "type": "string",
+                        "default": ""
+                    },
+                    "password": {
+                        "type": "string",
+                        "format": "password",
+                        "default": ""
+                    }
+                },
+                "type": "object"
+            },
+            "GroupRequest": {
+                "required": [
+                    "title",
+                    "year",
+                    "currency",
+                    "eventDate",
+                    "minWishAmount"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 120
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "default": null,
+                        "maxLength": 2000
+                    },
+                    "year": {
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 2100,
+                        "minimum": 2000
+                    },
+                    "budgetMin": {
+                        "description": "Whole units of the currency. Omit both budget fields for \"no budget\".",
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "default": null,
+                        "maximum": 100000,
+                        "minimum": 0
+                    },
+                    "budgetMax": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "default": null,
+                        "maximum": 100000,
+                        "minimum": 0
+                    },
+                    "currency": {
+                        "type": "string",
+                        "default": "CHF",
+                        "enum": [
+                            "CHF",
+                            "EUR",
+                            "USD",
+                            "GBP"
+                        ]
+                    },
+                    "eventDate": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2026-12-24",
+                        "default": ""
+                    },
+                    "minWishAmount": {
+                        "type": "integer",
+                        "default": 0,
+                        "maximum": 20,
+                        "minimum": 0
+                    }
+                },
+                "type": "object"
+            },
+            "ChangePasswordRequest": {
+                "required": [
+                    "currentPassword",
+                    "newPassword"
+                ],
+                "properties": {
+                    "currentPassword": {
+                        "type": "string",
+                        "format": "password",
+                        "default": ""
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "format": "password",
+                        "default": ""
+                    }
+                },
+                "type": "object"
+            },
+            "InviteByUsernameRequest": {
+                "required": [
+                    "username"
+                ],
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 30
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateMemberRequest": {
+                "required": [
+                    "status"
+                ],
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "default": "",
+                        "enum": [
+                            "active",
+                            "inactive"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "WishRequest": {
+                "required": [
+                    "title"
+                ],
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "default": "",
+                        "maxLength": 160
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "default": null,
+                        "maxLength": 2000
+                    },
+                    "url": {
+                        "description": "http or https only.",
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri",
+                        "default": null,
+                        "maxLength": 500
+                    }
+                },
+                "type": "object"
+            },
+            "ExclusionCandidateResponse": {
+                "required": [
+                    "memberId",
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "excluded"
+                ],
+                "properties": {
+                    "memberId": {
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "excluded": {
+                        "description": "The current user has excluded this participant.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "ExclusionStateResponse": {
+                "required": [
+                    "limit",
+                    "remaining",
+                    "participantCount",
+                    "editable",
+                    "prunedNotice",
+                    "candidates"
+                ],
+                "properties": {
+                    "limit": {
+                        "description": "How many participants one may exclude: floor(participants / 2) - 1.",
+                        "type": "integer"
+                    },
+                    "remaining": {
+                        "description": "How many more the current user may exclude.",
+                        "type": "integer"
+                    },
+                    "participantCount": {
+                        "type": "integer"
+                    },
+                    "editable": {
+                        "description": "False once the group has been drawn.",
+                        "type": "boolean"
+                    },
+                    "prunedNotice": {
+                        "description": "Exclusions of the current user were removed because the group shrank.",
+                        "type": "boolean"
+                    },
+                    "candidates": {
+                        "description": "All other active participants.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ExclusionCandidateResponse"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "AdminUserResponse": {
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "isAdmin",
+                    "mustChangePassword",
+                    "createdAt"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "isAdmin": {
+                        "type": "boolean"
+                    },
+                    "mustChangePassword": {
+                        "description": "A temporary password has been set and not been replaced yet.",
+                        "type": "boolean"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "TemporaryPasswordResponse": {
+                "required": [
+                    "user",
+                    "temporaryPassword"
+                ],
+                "properties": {
+                    "user": {
+                        "$ref": "#/components/schemas/AdminUserResponse"
+                    },
+                    "temporaryPassword": {
+                        "description": "Shown exactly once. It is not stored in readable form and cannot be retrieved again.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UserResponse": {
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "isAdmin",
+                    "mustChangePassword"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "isAdmin": {
+                        "description": "True for the Wichtler admin.",
+                        "type": "boolean"
+                    },
+                    "mustChangePassword": {
+                        "description": "True after an admin reset: the user must set a new password.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "MissingWishesResponse": {
+                "required": [
+                    "memberId",
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "wishCount"
+                ],
+                "properties": {
+                    "memberId": {
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "wishCount": {
+                        "description": "How many wishes the participant has entered so far. Never the wishes themselves.",
+                        "type": "integer"
+                    }
+                },
+                "type": "object"
+            },
+            "DrawStatusResponse": {
+                "required": [
+                    "isDrawed",
+                    "drawable",
+                    "participantCount",
+                    "minParticipants",
+                    "minWishAmount",
+                    "missingWishes",
+                    "pendingInvitations",
+                    "hasExclusions"
+                ],
+                "properties": {
+                    "isDrawed": {
+                        "type": "boolean"
+                    },
+                    "drawable": {
+                        "type": "boolean"
+                    },
+                    "participantCount": {
+                        "type": "integer"
+                    },
+                    "minParticipants": {
+                        "type": "integer"
+                    },
+                    "minWishAmount": {
+                        "type": "integer"
+                    },
+                    "missingWishes": {
+                        "description": "Active participants who still have too few wishes.",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MissingWishesResponse"
+                        }
+                    },
+                    "pendingInvitations": {
+                        "description": "Invitations by username that have not been answered. They lapse with the draw.",
+                        "type": "integer"
+                    },
+                    "hasExclusions": {
+                        "description": "Somebody has set an exclusion. Not who, and not how many.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "GroupOwnerResponse": {
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "username"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "GroupResponse": {
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "year",
+                    "budgetMin",
+                    "budgetMax",
+                    "currency",
+                    "eventDate",
+                    "minWishAmount",
+                    "drawable",
+                    "isDrawed",
+                    "drawnAt",
+                    "owner",
+                    "participantCount",
+                    "isOwner",
+                    "isMember",
+                    "isParticipant",
+                    "canManage"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "year": {
+                        "type": "integer"
+                    },
+                    "budgetMin": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "budgetMax": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "currency": {
+                        "type": "string",
+                        "enum": [
+                            "CHF",
+                            "EUR",
+                            "USD",
+                            "GBP"
+                        ]
+                    },
+                    "eventDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "minWishAmount": {
+                        "type": "integer"
+                    },
+                    "drawable": {
+                        "description": "Computed: enough participants, everyone has enough wishes, not drawn yet.",
+                        "type": "boolean"
+                    },
+                    "isDrawed": {
+                        "type": "boolean"
+                    },
+                    "drawnAt": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/GroupOwnerResponse"
+                    },
+                    "participantCount": {
+                        "description": "Participants with status \"active\".",
+                        "type": "integer"
+                    },
+                    "isOwner": {
+                        "description": "The current user is the group admin.",
+                        "type": "boolean"
+                    },
+                    "isMember": {
+                        "description": "The current user has joined the group. False when the Wichtler admin looks at a foreign group.",
+                        "type": "boolean"
+                    },
+                    "isParticipant": {
+                        "description": "The current user takes part in the draw (status \"active\").",
+                        "type": "boolean"
+                    },
+                    "canManage": {
+                        "description": "The current user may edit and delete the group.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "WishResponse": {
+                "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "url"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "url": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "uri"
+                    }
+                },
+                "type": "object"
+            },
+            "AssignmentResponse": {
+                "required": [
+                    "receiverFirstName",
+                    "receiverLastName",
+                    "receiverUsername",
+                    "wishes"
+                ],
+                "properties": {
+                    "receiverFirstName": {
+                        "type": "string"
+                    },
+                    "receiverLastName": {
+                        "type": "string"
+                    },
+                    "receiverUsername": {
+                        "type": "string"
+                    },
+                    "wishes": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/WishResponse"
+                        }
+                    }
+                },
+                "type": "object"
+            },
             "HealthResponse": {
                 "required": [
                     "status",
@@ -64,10 +3364,178 @@
                     }
                 },
                 "type": "object"
+            },
+            "InvitationResponse": {
+                "required": [
+                    "groupId",
+                    "title",
+                    "description",
+                    "year",
+                    "eventDate",
+                    "budgetMin",
+                    "budgetMax",
+                    "currency",
+                    "minWishAmount",
+                    "owner",
+                    "participantCount",
+                    "memberId",
+                    "alreadyJoined"
+                ],
+                "properties": {
+                    "groupId": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "year": {
+                        "type": "integer"
+                    },
+                    "eventDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "budgetMin": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "budgetMax": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "minWishAmount": {
+                        "type": "integer"
+                    },
+                    "owner": {
+                        "$ref": "#/components/schemas/GroupOwnerResponse"
+                    },
+                    "participantCount": {
+                        "type": "integer"
+                    },
+                    "memberId": {
+                        "description": "Id of the pending invitation by username, if there is one.",
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "alreadyJoined": {
+                        "description": "The current user is in the group already.",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "MemberResponse": {
+                "required": [
+                    "id",
+                    "firstName",
+                    "lastName",
+                    "username",
+                    "status",
+                    "isOwner",
+                    "isMe"
+                ],
+                "properties": {
+                    "id": {
+                        "description": "Id of the membership, not of the user.",
+                        "type": "integer"
+                    },
+                    "firstName": {
+                        "type": "string"
+                    },
+                    "lastName": {
+                        "type": "string"
+                    },
+                    "username": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "invited",
+                            "active",
+                            "inactive"
+                        ]
+                    },
+                    "isOwner": {
+                        "description": "This member is the group admin.",
+                        "type": "boolean"
+                    },
+                    "isMe": {
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "InviteLinkResponse": {
+                "required": [
+                    "token"
+                ],
+                "properties": {
+                    "token": {
+                        "description": "Secret of the share link. The link is \"/einladung/{token}\" on the app's own address.",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "cookieAuth": {
+                "type": "apiKey",
+                "name": "BEARER",
+                "in": "cookie"
             }
         }
     },
+    "security": [
+        {
+            "cookieAuth": []
+        }
+    ],
     "tags": [
+        {
+            "name": "Exclusions"
+        },
+        {
+            "name": "Members"
+        },
+        {
+            "name": "Admin"
+        },
+        {
+            "name": "Draw"
+        },
+        {
+            "name": "Groups"
+        },
+        {
+            "name": "Invitations"
+        },
+        {
+            "name": "Me"
+        },
+        {
+            "name": "Wishes"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
         {
             "name": "System",
             "description": "System"

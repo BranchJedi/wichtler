@@ -1,0 +1,14 @@
+gesdinet_jwt_refresh_token:
+    refresh_token_class: App\Entity\RefreshToken
+    ttl: 1209600 # 14 days
+    single_use: true
+    hash_tokens:
+        enabled: true
+        accept_stored_in_the_clear: false
+    cookie:
+        enabled: true
+        same_site: strict
+        path: /api/auth
+        http_only: true
+        secure: true
+        remove_token_from_body: true

@@ -26,3 +26,16 @@ web_extra_daemons:
     - name: vite
       command: "npm install --no-audit --no-fund && npm run api:generate && npm run dev"
       directory: /var/www/html/frontend
+
+# Local Wichtler admin (user 1), created by "app:admin:seed" on start. Development only.
+web_environment:
+    - ADMIN_USERNAME=admin
+    - ADMIN_PASSWORD=wichtler-admin-lokal
+hooks:
+    post-start:
+        - exec: cd backend && composer install --no-interaction --quiet
+        - exec: cd backend && php bin/console lexik:jwt:generate-keypair --skip-if-exists
+        - exec: cd backend && php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+        - exec: mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS db_test; GRANT ALL ON db_test.* TO 'db'@'%';"
+        - exec: cd backend && php bin/console --env=test doctrine:migrations:migrate --no-interaction --allow-no-migration
+        - exec: cd backend && php bin/console app:admin:seed
