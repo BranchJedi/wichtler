@@ -52,11 +52,11 @@ export function InvitationOverlay({
                 <div className="space-y-4">
                     <h3 className="text-xl font-bold">{invitation.title}</h3>
                     {invitation.description &&
-                        <p className="whitespace-pre-line text-stone-700">{invitation.description}</p>}
+                        <p className="whitespace-pre-line text-ink">{invitation.description}</p>}
                     <dl className="grid gap-3 sm:grid-cols-2">
                         {rows.map(([term, value]) => (
                             <div key={term}>
-                                <dt className="text-sm text-stone-500">{term}</dt>
+                                <dt className="text-sm text-ink-muted">{term}</dt>
                                 <dd className="font-medium">{value}</dd>
                             </div>
                         ))}

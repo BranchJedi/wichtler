@@ -1,3 +1,4 @@
+import starUrl from '../assets/illustrations/stern.svg'
 import {zodResolver} from '@hookform/resolvers/zod'
 import {useForm} from 'react-hook-form'
 import {Link, useLocation} from 'react-router'
@@ -9,6 +10,7 @@ import {isInvited} from '../auth/invite'
 import {useSetSessionUser} from '../auth/session'
 import {Button, Card, Field, Notice} from '../components/ui'
 import {de} from '../i18n/de'
+import {GuestStage} from '../welcome/GuestStage'
 
 const schema = z
     .object({
@@ -37,7 +39,22 @@ export function RegisterPage() {
     const {errors} = formState
 
     return (
-        <Card title={de.register.title}>
+        <GuestStage
+            eyebrow={de.welcome.registerEyebrow}
+            title={de.welcome.registerTitle}
+            lead={de.welcome.registerLead}
+            extra={
+                <ul className="mt-6 max-w-prose space-y-3">
+                    {de.welcome.registerPoints.map((point) => (
+                        <li key={point} className="flex gap-3">
+                            <img src={starUrl} alt="" className="mt-1 size-4 shrink-0"/>
+                            <span>{point}</span>
+                        </li>
+                    ))}
+                </ul>
+            }
+        >
+        <Card title={de.register.title} framed>
             <form
                 className="space-y-4"
                 noValidate
@@ -82,12 +99,13 @@ export function RegisterPage() {
                     {de.register.submit}
                 </Button>
             </form>
-            <p className="mt-6 text-center text-sm text-stone-600">
+            <p className="mt-6 text-center text-sm text-ink-muted">
                 {de.register.hasAccount}{' '}
-                <Link to="/login" state={location.state} className="font-medium text-pine-700 underline">
+                <Link to="/login" state={location.state} className="font-semibold text-tanne-700 underline">
                     {de.register.toLogin}
                 </Link>
             </p>
         </Card>
+        </GuestStage>
     )
 }

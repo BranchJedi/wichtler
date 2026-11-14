@@ -47,8 +47,8 @@ export function UsersPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-bold">{t.title}</h1>
-                <p className="mt-1 text-sm text-stone-500">{t.intro}</p>
+                <h1 className="text-3xl font-semibold">{t.title}</h1>
+                <p className="mt-1 text-sm text-ink-muted">{t.intro}</p>
             </div>
 
             <Card>
@@ -62,21 +62,21 @@ export function UsersPage() {
                     spellCheck={false}
                 />
 
-                {users.isPending && <p role="status" className="mt-4 text-stone-500">{de.app.loading}</p>}
+                {users.isPending && <p role="status" className="mt-4 text-ink-muted">{de.app.loading}</p>}
                 {users.isError && <div className="mt-4"><Notice tone="error">{t.loadFailed}</Notice></div>}
-                {users.data?.length === 0 && <p className="mt-4 text-stone-700">{t.empty}</p>}
+                {users.data?.length === 0 && <p className="mt-4 text-ink">{t.empty}</p>}
 
-                <ul className="mt-2 divide-y divide-stone-200">
+                <ul className="mt-2 divide-y divide-line">
                     {users.data?.map((user) => (
                         <li key={user.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
                             <div className="mr-auto min-w-0">
                                 <p className="font-medium">{fullName(user)}</p>
-                                <p className="text-sm text-stone-500">{user.username}</p>
+                                <p className="text-sm text-ink-muted">{user.username}</p>
                             </div>
                             {user.isAdmin && <Badge tone="done">{t.adminBadge}</Badge>}
                             {user.mustChangePassword && <Badge tone="ready">{t.temporaryBadge}</Badge>}
                             {user.id === me?.id ? (
-                                <p className="w-full text-sm text-stone-500">{t.self}</p>
+                                <p className="w-full text-sm text-ink-muted">{t.self}</p>
                             ) : (
                                 <div className="flex w-full flex-wrap gap-2 sm:w-auto">
                                     <Button variant="ghost" onClick={() => setEditing(user)}>
@@ -96,12 +96,12 @@ export function UsersPage() {
                         </li>
                     ))}
                 </ul>
-                {users.data?.length === 100 && <p className="mt-3 text-sm text-stone-500">{t.truncated}</p>}
+                {users.data?.length === 100 && <p className="mt-3 text-sm text-ink-muted">{t.truncated}</p>}
             </Card>
 
             <p>
                 <a href="/api/doc" target="_blank" rel="noopener noreferrer"
-                   className="inline-flex min-h-11 items-center text-sm font-medium text-pine-700 underline">
+                   className="inline-flex min-h-11 items-center text-sm font-medium text-tanne-700 underline">
                     {t.apiDocs}
                 </a>
             </p>

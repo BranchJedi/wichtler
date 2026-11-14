@@ -135,10 +135,10 @@ export function ProfilePage() {
     return (
         <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold">{de.profile.title}</h1>
+                <h1 className="text-3xl font-semibold">{de.profile.title}</h1>
                 {user.isAdmin && (
                     <span
-                        className="rounded-full bg-pine-100 px-3 py-1 text-xs font-semibold text-pine-900">{de.profile.adminBadge}</span>
+                        className="rounded-full bg-tanne-100 px-3 py-1 text-xs font-semibold text-tanne-700">{de.profile.adminBadge}</span>
                 )}
             </div>
             {user.mustChangePassword && <Notice tone="info">{de.profile.mustChangePassword}</Notice>}

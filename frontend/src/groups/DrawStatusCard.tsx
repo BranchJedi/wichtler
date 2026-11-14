@@ -20,7 +20,7 @@ function Check({done, children}: { done: boolean; children: string }) {
         <li className="flex items-start gap-3 py-2">
       <span
           aria-hidden="true"
-          className={`mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${done ? 'bg-pine-600 text-white' : 'bg-stone-200 text-stone-600'}`}
+          className={`mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${done ? 'bg-tanne-700 text-on-dark' : 'bg-paper-200 text-ink-muted'}`}
       >
         {done ? '✓' : '·'}
       </span>
@@ -71,14 +71,14 @@ export function DrawStatusCard({group}: { group: GroupResponse }) {
 
     return (
         <Card title={t.title}>
-            {status.isPending && <p role="status" className="text-stone-500">{de.app.loading}</p>}
+            {status.isPending && <p role="status" className="text-ink-muted">{de.app.loading}</p>}
             {status.isError && <Notice tone="error">{t.loadFailed}</Notice>}
 
             {status.data?.isDrawed && (
                 <div className="space-y-4">
                     <Notice
                         tone="success">{group.drawnAt ? t.drawnAt(dateTime.format(new Date(group.drawnAt))) : t.drawn}</Notice>
-                    <p className="text-sm text-stone-500">{t.secrecy}</p>
+                    <p className="text-sm text-ink-muted">{t.secrecy}</p>
                     <Button
                         variant="danger"
                         onClick={() => {
@@ -104,23 +104,23 @@ export function DrawStatusCard({group}: { group: GroupResponse }) {
                     </ul>
                     {status.data.missingWishes.length > 0 && (
                         <div>
-                            <h3 className="text-sm font-semibold text-stone-700">{t.missingTitle}</h3>
-                            <ul className="mt-1 divide-y divide-stone-200">
+                            <h3 className="text-sm font-semibold text-ink">{t.missingTitle}</h3>
+                            <ul className="mt-1 divide-y divide-line">
                                 {status.data.missingWishes.map((member) => (
                                     <li key={member.memberId} className="flex items-center gap-3 py-2">
                     <span className="mr-auto">
                       {member.firstName} {member.lastName} <span
-                        className="text-sm text-stone-500">({member.username})</span>
+                        className="text-sm text-ink-muted">({member.username})</span>
                     </span>
                                         <span
-                                            className="text-sm font-medium text-stone-700">{t.missingRow(member.wishCount, status.data.minWishAmount)}</span>
+                                            className="text-sm font-medium text-ink">{t.missingRow(member.wishCount, status.data.minWishAmount)}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     )}
                     {status.data.pendingInvitations > 0 &&
-                        <p className="text-sm text-stone-500">{t.pendingInvitations(status.data.pendingInvitations)}</p>}
+                        <p className="text-sm text-ink-muted">{t.pendingInvitations(status.data.pendingInvitations)}</p>}
                     <Button
                         disabled={!status.data.drawable}
                         onClick={() => {
@@ -141,7 +141,7 @@ export function DrawStatusCard({group}: { group: GroupResponse }) {
             >
                 {status.data && (
                     <div className="space-y-4">
-                        <p className="text-sm text-stone-700">{t.startLocks}</p>
+                        <p className="text-sm text-ink">{t.startLocks}</p>
                         {status.data.pendingInvitations > 0 &&
                             <Notice tone="info">{t.startPending(status.data.pendingInvitations)}</Notice>}
                         {inferenceWarnings(status.data).map((warning) => (

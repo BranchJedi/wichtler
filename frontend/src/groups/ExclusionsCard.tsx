@@ -33,16 +33,16 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
 
     return (
         <Card title={t.title}>
-            <p className="text-sm text-stone-500">{t.intro}</p>
+            <p className="text-sm text-ink-muted">{t.intro}</p>
 
-            {state.isPending && <p role="status" className="mt-3 text-stone-500">{de.app.loading}</p>}
+            {state.isPending && <p role="status" className="mt-3 text-ink-muted">{de.app.loading}</p>}
             {state.isError && <div className="mt-3"><Notice tone="error">{t.loadFailed}</Notice></div>}
 
             {state.data && (
                 <div className="mt-4 space-y-4">
                     {state.data.prunedNotice && (
-                        <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-3">
-                            <p role="status" className="text-sm text-amber-900">
+                        <div className="space-y-2 rounded-lg border border-gold-700 bg-gold-100 p-3">
+                            <p role="status" className="text-sm text-ink">
                                 {t.pruned}
                             </p>
                             <Button variant="ghost" busy={dismiss.isPending}
@@ -62,7 +62,7 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
                     {failure ? <Notice tone="error">{errorMessage(failure)}</Notice> : null}
 
                     {(state.data.limit > 0 || state.data.candidates.some((candidate) => candidate.excluded)) && (
-                        <ul className="divide-y divide-stone-200">
+                        <ul className="divide-y divide-line">
                             {state.data.candidates.map((candidate) => {
                                 const memberId = String(candidate.memberId)
                                 return (
@@ -71,7 +71,7 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
                                             <p className="font-medium">
                                                 {candidate.firstName} {candidate.lastName}
                                             </p>
-                                            <p className="text-sm text-stone-500">{candidate.username}</p>
+                                            <p className="text-sm text-ink-muted">{candidate.username}</p>
                                         </div>
                                         {candidate.excluded && <Badge tone="ready">{t.excluded}</Badge>}
                                         {state.data.editable &&
@@ -106,7 +106,7 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
                     )}
 
                     {state.data.editable && state.data.limit > 0 &&
-                        <p className="text-sm text-stone-500">{t.inference}</p>}
+                        <p className="text-sm text-ink-muted">{t.inference}</p>}
                 </div>
             )}
         </Card>

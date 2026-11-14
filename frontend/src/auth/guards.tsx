@@ -4,7 +4,7 @@ import {useSession} from './session'
 
 function Loading() {
     return (
-        <p role="status" className="p-8 text-center text-stone-500">
+        <p role="status" className="p-8 text-center text-ink-muted">
             {de.app.loading}
         </p>
     )

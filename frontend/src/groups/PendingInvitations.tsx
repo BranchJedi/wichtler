@@ -47,16 +47,16 @@ export function PendingInvitations() {
     if (!invitations.data || invitations.data.length === 0) return null
 
     return (
-        <section aria-labelledby="pending-invitations" className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
-            <h2 id="pending-invitations" className="font-semibold text-amber-900">
+        <section aria-labelledby="pending-invitations" className="rounded-2xl border border-gold-700 bg-gold-100 p-5">
+            <h2 id="pending-invitations" className="font-semibold text-ink">
                 {t.pendingTitle}
             </h2>
-            <ul className="mt-2 divide-y divide-amber-200">
+            <ul className="mt-2 divide-y divide-gold-500">
                 {invitations.data.map((invitation) => (
                     <li key={invitation.memberId} className="flex flex-wrap items-center gap-3 py-3">
                         <div className="mr-auto">
                             <p className="font-medium">{invitation.title}</p>
-                            <p className="text-sm text-stone-600">
+                            <p className="text-sm text-ink-muted">
                                 {formatEventDate(invitation.eventDate)} · {invitation.owner.firstName} {invitation.owner.lastName}
                             </p>
                         </div>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 110" role="img" aria-label="Tannenzweig mit Beeren">
+  <g fill="none" stroke="#1f4d3a" stroke-width="5" stroke-linecap="round">
+    <path d="M12 86C70 80 150 62 228 22" stroke="#5b4630" stroke-width="4"/>
+    <path d="M40 83l-14-22M40 83l-6 22M62 79L50 54M62 79l-2 24M84 75L74 48M84 75l2 26M106 70L98 42M106 70l6 26M128 64l-6-28M128 64l10 24M150 56l-4-28M150 56l12 22M172 47l-2-26M172 47l14 20M194 37l0-24M194 37l14 16M214 28l4-18M214 28l12 10"/>
+  </g>
+  <g fill="none" stroke="#28614a" stroke-width="4" stroke-linecap="round">
+    <path d="M51 81L40 60M51 81l-3 22M73 77L63 52M73 77l1 24M95 73L87 46M95 73l4 25M117 67l-7-27M117 67l8 24M139 60l-5-27M139 60l11 22M161 52l-3-26M161 52l13 20M183 42l-1-24M183 42l14 18"/>
+  </g>
+  <circle cx="26" cy="92" r="9" fill="#8c1c2b"/>
+  <circle cx="42" cy="98" r="8" fill="#a82436"/>
+  <circle cx="30" cy="104" r="6" fill="#6f1522"/>
+  <circle cx="23" cy="89" r="2.5" fill="#f6dcdc"/>
+  <circle cx="40" cy="95" r="2" fill="#f6dcdc"/>
+</svg>

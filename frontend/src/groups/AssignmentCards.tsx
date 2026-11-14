@@ -11,8 +11,8 @@ const t = de.assignment
 export function MyAssignmentCard({group}: { group: GroupResponse }) {
     return (
         <Card title={t.title}>
-            <p className="mb-4 text-sm text-stone-500">{t.intro}</p>
-            <AssignmentReveal load={() => getMyAssignment(String(group.id))} revealLabel={t.reveal} lead={t.givesTo}/>
+            <p className="mb-4 text-sm text-ink-muted">{t.intro}</p>
+            <AssignmentReveal load={() => getMyAssignment(String(group.id))} revealLabel={t.reveal} lead={t.givesTo} festive/>
         </Card>
     )
 }
@@ -25,13 +25,13 @@ export function AllAssignmentsCard({group}: { group: GroupResponse }) {
 
     return (
         <Card title={t.allTitle}>
-            <p className="text-sm text-stone-500">{t.allIntro}</p>
-            <ul className="mt-2 divide-y divide-stone-200">
+            <p className="text-sm text-ink-muted">{t.allIntro}</p>
+            <ul className="mt-2 divide-y divide-line">
                 {givers.map((giver) => (
                     <li key={giver.id} className="space-y-3 py-4">
                         <p className="font-medium">
                             {giver.firstName} {giver.lastName} <span
-                            className="text-sm font-normal text-stone-500">({giver.username})</span>
+                            className="text-sm font-normal text-ink-muted">({giver.username})</span>
                         </p>
                         <AssignmentReveal
                             load={() => getAssignmentOfMember(groupId, String(giver.id))}

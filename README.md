@@ -84,3 +84,6 @@ Ein einzelner Ablauf lässt sich über den Anfang des Dateinamens wählen, zum B
 | Drosselung von Login und Registrierung | `backend/config/packages/rate_limiter.yaml`, `backend/src/Security/LoginRateLimiter.php` |
 | Aufdecken des Wichtels | `frontend/src/groups/AssignmentReveal.tsx` |
 | Alle Texte der Oberfläche | `frontend/src/i18n/de.ts` |
+| Design: Farben, Schriften, Schatten (Tokens) | `frontend/src/index.css` |
+| Illustrationen | `frontend/src/assets/illustrations/` |
+| Inhalte der Login-Seite (Countdown, Schritte, Versprechen, FAQ) | `frontend/src/welcome/` |

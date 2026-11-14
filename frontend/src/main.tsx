@@ -2,6 +2,8 @@ import './zod-setup.ts'
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
+import '@fontsource-variable/figtree'
+import '@fontsource-variable/fraunces'
 import './index.css'
 import App from './App.tsx'
 

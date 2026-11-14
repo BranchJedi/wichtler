@@ -32,12 +32,12 @@ export function InvitePage() {
         },
     })
 
-    if (preview.isPending) return <p role="status" className="text-stone-500">{de.app.loading}</p>
+    if (preview.isPending) return <p role="status" className="text-ink-muted">{de.app.loading}</p>
     if (preview.isError) {
         return (
             <div className="space-y-4">
                 <Notice tone="error">{t.expired}</Notice>
-                <Link to="/" className="inline-flex min-h-11 items-center font-medium text-pine-700 underline">
+                <Link to="/" className="inline-flex min-h-11 items-center font-medium text-tanne-700 underline">
                     {de.errors.backHome}
                 </Link>
             </div>

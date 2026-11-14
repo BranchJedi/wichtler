@@ -24,12 +24,12 @@ export function GroupPage() {
     const {data: group, isPending, isError} = useGetGroup(id, {query: {retry: false}})
 
     const back = (
-        <Link to="/" className="inline-flex min-h-11 items-center text-sm font-medium text-pine-700 underline">
+        <Link to="/" className="inline-flex min-h-11 items-center text-sm font-medium text-tanne-700 underline">
             ← {t.back}
         </Link>
     )
 
-    if (isPending) return <p role="status" className="text-stone-500">{de.app.loading}</p>
+    if (isPending) return <p role="status" className="text-ink-muted">{de.app.loading}</p>
     if (isError) {
         return (
             <div className="space-y-4">
@@ -47,11 +47,11 @@ export function GroupPage() {
             {back}
             <div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="mr-auto text-2xl font-bold">{group.title}</h1>
+                    <h1 className="mr-auto text-3xl font-semibold">{group.title}</h1>
                     <Badge tone={status.tone}>{status.label}</Badge>
                     <Badge tone={role.tone}>{role.label}</Badge>
                 </div>
-                {group.description && <p className="mt-2 whitespace-pre-line text-stone-700">{group.description}</p>}
+                {group.description && <p className="mt-2 whitespace-pre-line text-ink">{group.description}</p>}
             </div>
 
             {group.isDrawed && group.isParticipant && <MyAssignmentCard group={group}/>}
@@ -69,7 +69,7 @@ export function GroupPage() {
                         [de.group.participants(group.participantCount), ''],
                     ].map(([term, value]) => (
                         <div key={term}>
-                            <dt className="text-sm text-stone-500">{value === '' ? '' : term}</dt>
+                            <dt className="text-sm text-ink-muted">{value === '' ? '' : term}</dt>
                             <dd className="font-medium">{value === '' ? term : value}</dd>
                         </div>
                     ))}
@@ -92,7 +92,7 @@ export function GroupPage() {
                             {t.delete}
                         </Button>
                     </div>
-                    {group.isDrawed && <p className="mt-3 text-sm text-stone-500">{t.deleteLockedHint}</p>}
+                    {group.isDrawed && <p className="mt-3 text-sm text-ink-muted">{t.deleteLockedHint}</p>}
                 </Card>
             )}
 

@@ -6,11 +6,13 @@ import type {
     TextareaHTMLAttributes
 } from 'react'
 import {useId} from 'react'
+import starUrl from '../assets/illustrations/stern.svg'
 
-export function Card({title, children}: { title?: string; children: ReactNode }) {
+export function Card({title, framed = false, children}: { title?: string; framed?: boolean; children: ReactNode }) {
     return (
-        <section className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            {title && <h2 className="mb-4 text-lg font-semibold">{title}</h2>}
+        <section
+            className={`rounded-2xl border border-line bg-paper-000 shadow-card ${framed ? 'framed p-8' : 'p-6'}`}>
+            {title && <h2 className="mb-4 text-xl font-semibold">{title}</h2>}
             {children}
         </section>
     )
@@ -23,13 +25,13 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export function Button({variant = 'primary', busy = false, className = '', children, disabled, ...props}: ButtonProps) {
     const styles = {
-        primary: 'bg-pine-600 text-white hover:bg-pine-700 disabled:bg-stone-300',
-        danger: 'bg-berry-600 text-white hover:bg-berry-700 disabled:bg-stone-300',
-        ghost: 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-100 disabled:text-stone-400',
+        primary: 'bg-tanne-700 text-on-dark hover:bg-tanne-800 disabled:bg-paper-200 disabled:text-ink-muted',
+        danger: 'bg-wein-700 text-on-dark hover:bg-wein-800 disabled:bg-paper-200 disabled:text-ink-muted',
+        ghost: 'border border-line-strong bg-paper-000 text-ink hover:bg-paper-200 disabled:text-ink-muted',
     }[variant]
     return (
         <button
-            className={`inline-flex min-h-11 items-center justify-center rounded-lg px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-600 disabled:cursor-not-allowed ${styles} ${className}`}
+            className={`inline-flex min-h-11 items-center justify-center rounded-[10px] px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700 disabled:cursor-not-allowed ${styles} ${className}`}
             disabled={disabled || busy}
             aria-busy={busy}
             {...props}
@@ -46,23 +48,23 @@ export function Field({label, error, hint, ...props}: FieldProps) {
     const describedBy = [error ? `${id}-error` : null, hint ? `${id}-hint` : null].filter(Boolean).join(' ')
     return (
         <div>
-            <label htmlFor={id} className="mb-1 block text-sm font-medium text-stone-700">
+            <label htmlFor={id} className="mb-1 block text-sm font-semibold text-ink">
                 {label}
             </label>
             <input
                 id={id}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={describedBy || undefined}
-                className={`block min-h-11 w-full rounded-lg border bg-white px-3 text-base outline-none focus:ring-2 focus:ring-pine-600/30 disabled:bg-stone-100 disabled:text-stone-500 ${error ? 'border-berry-600' : 'border-stone-300 focus:border-pine-600'}`}
+                className={`block min-h-11 w-full rounded-[10px] border bg-paper-000 px-3 text-base outline-none focus:ring-2 focus:ring-tanne-700/30 disabled:bg-paper-200 disabled:text-ink-muted ${error ? 'border-wein-700' : 'border-line-strong focus:border-tanne-700'}`}
                 {...props}
             />
             {hint && !error && (
-                <p id={`${id}-hint`} className="mt-1 text-sm text-stone-500">
+                <p id={`${id}-hint`} className="mt-1 text-sm text-ink-muted">
                     {hint}
                 </p>
             )}
             {error && (
-                <p id={`${id}-error`} className="mt-1 text-sm text-berry-700">
+                <p id={`${id}-error`} className="mt-1 text-sm text-wein-700">
                     {error}
                 </p>
             )}
@@ -72,18 +74,18 @@ export function Field({label, error, hint, ...props}: FieldProps) {
 
 export function Notice({tone, children}: { tone: 'error' | 'success' | 'info'; children: ReactNode }) {
     const styles = {
-        error: 'border-berry-600/30 bg-red-50 text-berry-700',
-        success: 'border-pine-600/30 bg-pine-50 text-pine-900',
-        info: 'border-amber-300 bg-amber-50 text-amber-900',
+        error: 'border-wein-700 bg-wein-100 text-wein-700',
+        success: 'border-tanne-700 bg-tanne-50 text-tanne-700',
+        info: 'border-gold-700 bg-gold-100 text-ink',
     }[tone]
     return (
-        <p role={tone === 'error' ? 'alert' : 'status'} className={`rounded-lg border px-3 py-2 text-sm ${styles}`}>
+        <p role={tone === 'error' ? 'alert' : 'status'} className={`rounded-md border px-3 py-2 text-sm ${styles}`}>
             {children}
         </p>
     )
 }
 
-const control = 'block w-full rounded-lg border bg-white px-3 text-base outline-none focus:ring-2 focus:ring-pine-600/30 disabled:bg-stone-100 disabled:text-stone-500'
+const control = 'block w-full rounded-[10px] border bg-paper-000 px-3 text-base outline-none focus:ring-2 focus:ring-tanne-700/30 disabled:bg-paper-200 disabled:text-ink-muted'
 
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: string }
 
@@ -91,7 +93,7 @@ export function TextArea({label, error, ...props}: TextAreaProps) {
     const id = useId()
     return (
         <div>
-            <label htmlFor={id} className="mb-1 block text-sm font-medium text-stone-700">
+            <label htmlFor={id} className="mb-1 block text-sm font-semibold text-ink">
                 {label}
             </label>
             <textarea
@@ -99,11 +101,11 @@ export function TextArea({label, error, ...props}: TextAreaProps) {
                 rows={3}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? `${id}-error` : undefined}
-                className={`${control} py-2 ${error ? 'border-berry-600' : 'border-stone-300 focus:border-pine-600'}`}
+                className={`${control} py-2 ${error ? 'border-wein-700' : 'border-line-strong focus:border-tanne-700'}`}
                 {...props}
             />
             {error && (
-                <p id={`${id}-error`} className="mt-1 text-sm text-berry-700">
+                <p id={`${id}-error`} className="mt-1 text-sm text-wein-700">
                     {error}
                 </p>
             )}
@@ -117,29 +119,45 @@ export function Select({label, error, children, ...props}: SelectProps) {
     const id = useId()
     return (
         <div>
-            <label htmlFor={id} className="mb-1 block text-sm font-medium text-stone-700">
+            <label htmlFor={id} className="mb-1 block text-sm font-semibold text-ink">
                 {label}
             </label>
             <select
                 id={id}
                 aria-invalid={error ? true : undefined}
-                className={`${control} min-h-11 ${error ? 'border-berry-600' : 'border-stone-300 focus:border-pine-600'}`}
+                className={`${control} min-h-11 ${error ? 'border-wein-700' : 'border-line-strong focus:border-tanne-700'}`}
                 {...props}
             >
                 {children}
             </select>
-            {error && <p className="mt-1 text-sm text-berry-700">{error}</p>}
+            {error && <p className="mt-1 text-sm text-wein-700">{error}</p>}
         </div>
     )
 }
 
 export function Badge({tone, children}: { tone: 'neutral' | 'ready' | 'done' | 'admin'; children: ReactNode }) {
     const styles = {
-        neutral: 'bg-stone-100 text-stone-700',
-        ready: 'bg-amber-100 text-amber-900',
-        done: 'bg-pine-100 text-pine-900',
-        admin: 'bg-berry-600 text-white',
+        neutral: 'bg-paper-200 text-ink',
+        ready: 'bg-gold-100 text-gold-700',
+        done: 'bg-tanne-100 text-tanne-700',
+        admin: 'bg-wein-700 text-on-dark',
     }[tone]
     return <span
-        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles}`}>{children}</span>
+        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold tracking-wide ${styles}`}>{children}</span>
+}
+
+/** Uppercase line above a title. */
+export function Eyebrow({children}: { children: ReactNode }) {
+    return <p className="eyebrow">{children}</p>
+}
+
+/** Ornamental rule between sections: a hairline with the star in its middle. */
+export function Divider() {
+    return (
+        <div aria-hidden="true" className="flex items-center gap-4">
+            <span className="h-px flex-1 bg-line"/>
+            <img src={starUrl} alt="" className="size-5"/>
+            <span className="h-px flex-1 bg-line"/>
+        </div>
+    )
 }

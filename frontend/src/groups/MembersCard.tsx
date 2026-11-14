@@ -66,20 +66,20 @@ export function MembersCard({group}: { group: GroupResponse }) {
 
     return (
         <Card title={t.title}>
-            {members.isPending && <p role="status" className="text-stone-500">{de.app.loading}</p>}
+            {members.isPending && <p role="status" className="text-ink-muted">{de.app.loading}</p>}
             {members.isError && <Notice tone="error">{t.loadFailed}</Notice>}
             {update.isError && <div className="mb-3"><Notice tone="error">{errorMessage(update.error)}</Notice></div>}
 
-            <ul className="divide-y divide-stone-200">
+            <ul className="divide-y divide-line">
                 {members.data?.map((member) => (
                     <li key={member.id}
-                        className={`flex flex-wrap items-center gap-x-3 gap-y-2 py-3 ${member.status === 'active' ? '' : 'text-stone-500'}`}>
+                        className={`flex flex-wrap items-center gap-x-3 gap-y-2 py-3 ${member.status === 'active' ? '' : 'text-ink-muted'}`}>
                         <div className="mr-auto min-w-0">
                             <p className="font-medium">
                                 {fullName(member)}
-                                {member.isMe && <span className="font-normal text-stone-500"> ({t.you})</span>}
+                                {member.isMe && <span className="font-normal text-ink-muted"> ({t.you})</span>}
                             </p>
-                            <p className="text-sm text-stone-500">{member.username}</p>
+                            <p className="text-sm text-ink-muted">{member.username}</p>
                         </div>
                         {member.isOwner && <Badge tone="neutral">{t.status.owner}</Badge>}
                         {member.status === 'invited' && <Badge tone="ready">{t.status.invited}</Badge>}
@@ -116,10 +116,10 @@ export function MembersCard({group}: { group: GroupResponse }) {
                 ))}
             </ul>
 
-            {group.isDrawed && group.canManage && <p className="mt-3 text-sm text-stone-500">{t.lockedHint}</p>}
+            {group.isDrawed && group.canManage && <p className="mt-3 text-sm text-ink-muted">{t.lockedHint}</p>}
             {canEditMembers && <InviteSection groupId={groupId} onInvited={refresh}/>}
             {canLeave && (
-                <div className="mt-4 border-t border-stone-200 pt-4">
+                <div className="mt-4 border-t border-line pt-4">
                     <Button
                         variant="ghost"
                         onClick={() => {
@@ -207,7 +207,7 @@ function InviteSection({groupId, onInvited}: { groupId: string; onInvited: () =>
     }
 
     return (
-        <div className="mt-4 space-y-5 border-t border-stone-200 pt-4">
+        <div className="mt-4 space-y-5 border-t border-line pt-4">
             <h3 className="font-semibold">{ti.title}</h3>
 
             <form

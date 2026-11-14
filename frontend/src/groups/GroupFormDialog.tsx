@@ -170,9 +170,9 @@ function GroupForm({group, onDone, onSaved}: {
                 {...register('minWishAmount', {valueAsNumber: true})}
             />
 
-            <fieldset className="rounded-lg border border-stone-200 p-4" disabled={locked}>
-                <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-stone-700">
-                    <input type="checkbox" className="size-5 accent-pine-600" {...register('hasBudget')} />
+            <fieldset className="rounded-lg border border-line p-4" disabled={locked}>
+                <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-ink">
+                    <input type="checkbox" className="size-5 accent-tanne-700" {...register('hasBudget')} />
                     {t.hasBudget}
                 </label>
                 {hasBudget && (
@@ -194,14 +194,14 @@ function GroupForm({group, onDone, onSaved}: {
                                     onValueChange={(value) => field.onChange([value[0], value[1]])}
                                     disabled={locked}
                                 >
-                                    <Slider.Track className="relative h-2 grow rounded-full bg-stone-200">
-                                        <Slider.Range className="absolute h-full rounded-full bg-pine-600"/>
+                                    <Slider.Track className="relative h-2 grow rounded-full bg-paper-200">
+                                        <Slider.Range className="absolute h-full rounded-full bg-tanne-700"/>
                                     </Slider.Track>
                                     {[t.budgetMin, t.budgetMax].map((label) => (
                                         <Slider.Thumb
                                             key={label}
                                             aria-label={label}
-                                            className="block size-7 rounded-full border-2 border-pine-600 bg-white shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-600"
+                                            className="block size-7 rounded-full border-2 border-tanne-700 bg-paper-000 shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700"
                                         />
                                     ))}
                                 </Slider.Root>

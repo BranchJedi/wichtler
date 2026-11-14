@@ -65,9 +65,9 @@ export function WishesCard({group}: { group: GroupResponse }) {
 
     return (
         <Card title={t.title}>
-            <p className="text-sm text-stone-500">{t.intro}</p>
+            <p className="text-sm text-ink-muted">{t.intro}</p>
 
-            {wishes.isPending && <p role="status" className="mt-3 text-stone-500">{de.app.loading}</p>}
+            {wishes.isPending && <p role="status" className="mt-3 text-ink-muted">{de.app.loading}</p>}
             {wishes.isError && <div className="mt-3"><Notice tone="error">{t.loadFailed}</Notice></div>}
 
             {wishes.data && (
@@ -80,20 +80,20 @@ export function WishesCard({group}: { group: GroupResponse }) {
                     </div>
 
                     {count === 0 ? (
-                        <p className="mt-4 text-stone-700">{t.empty}</p>
+                        <p className="mt-4 text-ink">{t.empty}</p>
                     ) : (
-                        <ul className="mt-2 divide-y divide-stone-200">
+                        <ul className="mt-2 divide-y divide-line">
                             {wishes.data.map((wish) => (
                                 <li key={wish.id} className="py-3">
                                     <p className="font-medium">{wish.title}</p>
                                     {wish.description &&
-                                        <p className="mt-1 whitespace-pre-line text-sm text-stone-700">{wish.description}</p>}
+                                        <p className="mt-1 whitespace-pre-line text-sm text-ink">{wish.description}</p>}
                                     {wish.url && (
                                         <a
                                             href={wish.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="mt-1 inline-block text-sm font-medium break-all text-pine-700 underline"
+                                            className="mt-1 inline-block text-sm font-medium break-all text-tanne-700 underline"
                                         >
                                             {t.link}
                                         </a>

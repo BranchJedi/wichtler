@@ -1,3 +1,4 @@
+import gnomeUrl from '../assets/illustrations/wichtel.svg'
 import {useState} from 'react'
 import {Link, useNavigate} from 'react-router'
 import {useListGroups} from '../api/generated/groups/groups'
@@ -19,14 +20,14 @@ function GroupCard({group}: { group: GroupResponse }) {
         <li>
             <Link
                 to={`/gruppen/${group.id}`}
-                className="block rounded-2xl border border-stone-200 bg-white p-5 shadow-sm transition-colors hover:border-pine-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pine-600"
+                className="block h-full rounded-2xl border border-line bg-paper-000 p-5 shadow-card transition-colors hover:border-tanne-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700"
             >
                 <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="mr-auto text-lg font-semibold">{group.title}</h2>
+                    <h2 className="mr-auto text-xl font-semibold">{group.title}</h2>
                     <Badge tone={status.tone}>{status.label}</Badge>
                 </div>
-                <p className="mt-1 text-stone-700">{formatEventDate(group.eventDate)}</p>
-                <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-stone-500">
+                <p className="mt-1 text-ink">{formatEventDate(group.eventDate)}</p>
+                <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
                     <span>{de.group.participants(group.participantCount)}</span>
                     <span aria-hidden="true">·</span>
                     <span>{formatBudget(group)}</span>
@@ -50,8 +51,8 @@ export function HomePage() {
         <div className="space-y-6">
             <div className="flex flex-wrap items-end gap-3">
                 <div className="mr-auto">
-                    {user && <p className="text-sm text-stone-500">{t.greeting(user.firstName)}</p>}
-                    <h1 className="text-2xl font-bold">{t.title}</h1>
+                    {user && <p className="text-ink-muted">{t.greeting(user.firstName)}</p>}
+                    <h1 className="text-3xl font-semibold">{t.title}</h1>
                 </div>
                 <Button onClick={() => setCreating(true)}>{t.newGroup}</Button>
             </div>
@@ -60,14 +61,14 @@ export function HomePage() {
 
             {user?.isAdmin && (
                 <div role="group" aria-label={t.scopeLabel}
-                     className="inline-flex rounded-lg border border-stone-300 bg-white p-1">
+                     className="inline-flex rounded-lg border border-line-strong bg-paper-000 p-1">
                     {(['mine', 'all'] as const).map((value) => (
                         <button
                             key={value}
                             type="button"
                             aria-pressed={scope === value}
                             onClick={() => setScope(value)}
-                            className={`min-h-9 rounded-md px-3 text-sm font-medium ${scope === value ? 'bg-pine-600 text-white' : 'text-stone-700 hover:bg-stone-100'}`}
+                            className={`min-h-9 rounded-md px-3 text-sm font-medium ${scope === value ? 'bg-tanne-700 text-on-dark' : 'text-ink hover:bg-paper-200'}`}
                         >
                             {value === 'mine' ? t.scopeMine : t.scopeAll}
                         </button>
@@ -75,12 +76,13 @@ export function HomePage() {
                 </div>
             )}
 
-            {groups.isPending && <p role="status" className="text-stone-500">{de.app.loading}</p>}
+            {groups.isPending && <p role="status" className="text-ink-muted">{de.app.loading}</p>}
             {groups.isError && <Notice tone="error">{t.loadFailed}</Notice>}
             {groups.data?.length === 0 && (
                 <Card>
+                    <img src={gnomeUrl} alt="" className="float-right ml-4 w-20"/>
                     <p>{scope === 'all' ? t.emptyAll : t.empty}</p>
-                    {scope === 'mine' && <p className="mt-2 text-sm text-stone-500">{t.emptyHint}</p>}
+                    {scope === 'mine' && <p className="mt-2 text-sm text-ink-muted">{t.emptyHint}</p>}
                 </Card>
             )}
             {groups.data && groups.data.length > 0 && (

@@ -108,6 +108,7 @@ try {
     if (!ownersReceiver) throw new Error('no receiver in: ' + text)
     for (let i = 1; i <= 3; i++) if (!text.includes('Geheimwunsch ' + ownersReceiver + ' ' + i)) throw new Error('wish ' + i + ' missing: ' + text)
     for (const other of ['Ben', 'Carla', 'Dora'].filter((n) => n !== ownersReceiver)) if (text.includes('Geheimwunsch ' + other)) throw new Error('wishes of ' + other + ' shown')
+    await t.sleep(1500) // let the gift open before the picture is taken
     await shot('assignment-revealed-mobile')
     await js(`__t.click('Verbergen')`)
     await wait('hidden again', `!document.querySelector('[data-testid=assignment-revealed]') && !__t.has('Geheimwunsch ' + '${'${ownersReceiver}'}')`.replace('${ownersReceiver}', ownersReceiver))
@@ -156,7 +157,8 @@ try {
     await js(`__t.click('Aufdecken', ${rowIn('Alle Zuteilungen', ben)})`)
     await wait('one revealed', `document.querySelectorAll('[data-testid=assignment-revealed]').length === 1 && document.querySelectorAll('[data-testid=assignment-dummy]').length === 3`)
     const text = await js(`${rowIn('Alle Zuteilungen', ben)}.innerText`)
-    if (!text.includes('Ben beschenkt') || text.includes('Carla E2E')) throw new Error('unexpected row: ' + text)
+    // The lead is set as an uppercase line, so the rendered text is compared without case.
+    if (!text.toLowerCase().includes('ben beschenkt') || text.includes('Carla E2E')) throw new Error('unexpected row: ' + text)
     await shot('admin-assignments-mobile')
   })
 
