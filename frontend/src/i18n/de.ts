@@ -20,7 +20,7 @@ export const de = {
         required: 'Dieses Feld ist erforderlich.',
         maxLength: 'Höchstens 80 Zeichen.',
         username: 'Der Username muss 3 bis 30 Zeichen lang sein und darf nur Buchstaben (a-z), Ziffern, Punkt, Unterstrich und Bindestrich enthalten.',
-        passwordLength: 'Das Passwort muss mindestens 10 Zeichen lang sein.',
+        passwordLength: 'Das Passwort muss mindestens 6 Zeichen lang sein.',
         passwordMismatch: 'Die Passwörter stimmen nicht überein.',
     },
     login: {

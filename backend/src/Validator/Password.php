@@ -9,7 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[\Attribute(\Attribute::TARGET_PROPERTY)]
 final class Password extends Assert\Compound
 {
-    public const int MIN_LENGTH = 10;
+    public const int MIN_LENGTH = 6;
 
     protected function getConstraints(array $options): array
     {
