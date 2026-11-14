@@ -36,8 +36,8 @@ final class MeController
     #[Route('/api/me', name: 'api_me_update', methods: ['PATCH'])]
     #[OA\Patch(
         operationId: 'updateMe',
-        summary: 'Change name and username',
         description: 'Renews the session cookies, because the tokens carry the username.',
+        summary: 'Change name and username',
     )]
     #[OA\Response(response: 200, description: 'The updated user', content: new Model(type: UserResponse::class))]
     #[OA\Response(response: 422, description: 'Validation failed', content: new OA\JsonContent(ref: '#/components/schemas/ProblemDetails'))]

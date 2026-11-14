@@ -27,8 +27,8 @@ final class AuthController
     #[Route('/api/auth/register', name: 'api_auth_register', methods: ['POST'])]
     #[OA\Post(
         operationId: 'register',
-        summary: 'Create an account and sign in',
         description: 'Sets the BEARER and refresh_token cookies like a login.',
+        summary: 'Create an account and sign in',
         security: [],
         tags: ['Auth'],
     )]
@@ -45,6 +45,7 @@ final class AuthController
         #[Autowire(service: 'limiter.registration')] RateLimiterFactoryInterface $registrationLimiter,
     ): Response {
         $limit = $registrationLimiter->create($request->getClientIp())->consume();
+
         if (!$limit->isAccepted()) {
             throw new TooManyRequestsHttpException($limit->getRetryAfter()->getTimestamp() - time(), 'Zu viele Registrierungen. Bitte später erneut versuchen.');
         }
