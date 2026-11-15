@@ -6,7 +6,7 @@ import type {UserResponse} from '../api/generated/model'
 import {useChangeMyPassword, useUpdateMe} from '../api/generated/me/me'
 import {nameSchema, newPasswordSchema, usernameSchema} from '../auth/schemas'
 import {useSession, useSetSessionUser} from '../auth/session'
-import {Button, Card, Field, Notice} from '../components/ui'
+import {Avatar, Button, Card, Field, Notice} from '../components/ui'
 import {de} from '../i18n/de'
 
 const detailsSchema = z.object({firstName: nameSchema, lastName: nameSchema, username: usernameSchema})
@@ -135,19 +135,22 @@ export function ProfilePage() {
     return (
         <div className="space-y-6">
             <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-semibold">{de.profile.title}</h1>
+                <Avatar firstName={user.firstName} lastName={user.lastName}/>
+                <h1 className="text-4xl font-semibold">{de.profile.title}</h1>
                 {user.isAdmin && (
                     <span
                         className="rounded-full bg-tanne-100 px-3 py-1 text-xs font-semibold text-tanne-700">{de.profile.adminBadge}</span>
                 )}
             </div>
             {user.mustChangePassword && <Notice tone="info">{de.profile.mustChangePassword}</Notice>}
-            <Card title={de.profile.detailsTitle}>
-                <DetailsForm user={user}/>
-            </Card>
-            <Card title={de.profile.passwordTitle}>
-                <PasswordForm username={user.username}/>
-            </Card>
+            <div className="grid items-start gap-6 lg:grid-cols-2">
+                <Card title={de.profile.detailsTitle} feature="members">
+                    <DetailsForm user={user}/>
+                </Card>
+                <Card title={de.profile.passwordTitle} feature="exclusions">
+                    <PasswordForm username={user.username}/>
+                </Card>
+            </div>
         </div>
     )
 }

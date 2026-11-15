@@ -8,6 +8,7 @@ import {
     useDeclineInvitation,
     useListInvitations
 } from '../api/generated/invitations/invitations'
+import parcelUrl from '../assets/illustrations/paeckchen.svg'
 import {Button} from '../components/ui'
 import {de} from '../i18n/de'
 import {formatEventDate} from './format'
@@ -47,8 +48,9 @@ export function PendingInvitations() {
     if (!invitations.data || invitations.data.length === 0) return null
 
     return (
-        <section aria-labelledby="pending-invitations" className="rounded-2xl border border-gold-700 bg-gold-100 p-5">
-            <h2 id="pending-invitations" className="font-semibold text-ink">
+        <section aria-labelledby="pending-invitations" className="rounded-3xl border-2 border-dashed border-gold-700 bg-gold-100 p-5 sm:p-6">
+            <h2 id="pending-invitations" className="flex items-center gap-3 text-2xl font-semibold text-ink">
+                <img src={parcelUrl} alt="" className="size-10 -rotate-6"/>
                 {t.pendingTitle}
             </h2>
             <ul className="mt-2 divide-y divide-gold-500">

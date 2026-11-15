@@ -6,12 +6,45 @@ import type {
     TextareaHTMLAttributes
 } from 'react'
 import {useId} from 'react'
+import giftUrl from '../assets/illustrations/geschenk.svg'
+import parcelUrl from '../assets/illustrations/paeckchen.svg'
+import sealUrl from '../assets/illustrations/siegel.svg'
 import starUrl from '../assets/illustrations/stern.svg'
+import gnomeUrl from '../assets/illustrations/wichtel.svg'
+import listUrl from '../assets/illustrations/wunschzettel.svg'
 
-export function Card({title, framed = false, children}: { title?: string; framed?: boolean; children: ReactNode }) {
+export type Feature = 'wishes' | 'members' | 'exclusions' | 'draw' | 'assignment' | 'admin'
+
+/** Every feature of a group has its own colour and drawing, so it is recognised before it is read. */
+const features: Record<Feature, { band: string; icon: string }> = {
+    wishes: {band: 'bg-gold-100 text-ink', icon: listUrl},
+    members: {band: 'bg-tanne-100 text-tanne-900', icon: gnomeUrl},
+    exclusions: {band: 'bg-wein-100 text-wein-800', icon: sealUrl},
+    draw: {band: 'bg-tanne-900 text-on-dark', icon: giftUrl},
+    assignment: {band: 'bg-wein-700 text-on-dark', icon: parcelUrl},
+    admin: {band: 'bg-paper-200 text-ink', icon: starUrl},
+}
+
+type CardProps = { title?: string; framed?: boolean; feature?: Feature; children: ReactNode }
+
+export function Card({title, framed = false, feature, children}: CardProps) {
+    if (feature) {
+        const {band, icon} = features[feature]
+        return (
+            <section className="overflow-hidden rounded-3xl border border-line bg-paper-000 shadow-card">
+                <div className={`flex items-center gap-3 px-5 py-3 sm:px-6 ${band}`}>
+                    <span className="-my-1 inline-flex size-12 shrink-0 -rotate-6 items-center justify-center rounded-full bg-paper-000 shadow-card">
+                        <img src={icon} alt="" className="size-9"/>
+                    </span>
+                    <h2 className="text-2xl font-semibold">{title}</h2>
+                </div>
+                <div className="p-5 sm:p-6">{children}</div>
+            </section>
+        )
+    }
     return (
         <section
-            className={`rounded-2xl border border-line bg-paper-000 shadow-card ${framed ? 'framed p-8' : 'p-6'}`}>
+            className={`rounded-3xl border border-line bg-paper-000 shadow-card ${framed ? 'framed p-8' : 'p-6'}`}>
             {title && <h2 className="mb-4 text-xl font-semibold">{title}</h2>}
             {children}
         </section>
@@ -19,19 +52,21 @@ export function Card({title, framed = false, children}: { title?: string; framed
 }
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-    variant?: 'primary' | 'ghost' | 'danger';
+    variant?: 'primary' | 'ghost' | 'danger' | 'festive';
     busy?: boolean
 }
 
 export function Button({variant = 'primary', busy = false, className = '', children, disabled, ...props}: ButtonProps) {
+    // Buttons are round and sit on a small ledge that gives way when pressed.
     const styles = {
-        primary: 'bg-tanne-700 text-on-dark hover:bg-tanne-800 disabled:bg-paper-200 disabled:text-ink-muted',
-        danger: 'bg-wein-700 text-on-dark hover:bg-wein-800 disabled:bg-paper-200 disabled:text-ink-muted',
-        ghost: 'border border-line-strong bg-paper-000 text-ink hover:bg-paper-200 disabled:text-ink-muted',
+        primary: 'bg-tanne-700 text-on-dark shadow-[0_3px_0_var(--color-tanne-900)] hover:bg-tanne-800',
+        danger: 'bg-wein-700 text-on-dark shadow-[0_3px_0_#4d0e17] hover:bg-wein-800',
+        festive: 'bg-gold-500 text-ink shadow-[0_3px_0_var(--color-gold-700)] hover:bg-[#d4ae5c]',
+        ghost: 'border border-line-strong bg-paper-000 text-ink shadow-[0_3px_0_var(--color-line)] hover:bg-paper-200',
     }[variant]
     return (
         <button
-            className={`inline-flex min-h-11 items-center justify-center rounded-[10px] px-4 text-[15px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700 disabled:cursor-not-allowed ${styles} ${className}`}
+            className={`inline-flex min-h-11 items-center justify-center rounded-full px-5 text-[15px] font-semibold transition-[background-color,transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700 enabled:active:translate-y-[2px] enabled:active:shadow-none disabled:cursor-not-allowed disabled:border-line disabled:bg-paper-200 disabled:text-ink-muted disabled:shadow-none ${styles} ${className}`}
             disabled={disabled || busy}
             aria-busy={busy}
             {...props}
@@ -55,7 +90,7 @@ export function Field({label, error, hint, ...props}: FieldProps) {
                 id={id}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={describedBy || undefined}
-                className={`block min-h-11 w-full rounded-[10px] border bg-paper-000 px-3 text-base outline-none focus:ring-2 focus:ring-tanne-700/30 disabled:bg-paper-200 disabled:text-ink-muted ${error ? 'border-wein-700' : 'border-line-strong focus:border-tanne-700'}`}
+                className={`block min-h-11 w-full rounded-xl border-[1.5px] bg-paper-000 px-3.5 text-base outline-none placeholder:text-ink-muted/70 focus:ring-4 focus:ring-gold-500/35 disabled:bg-paper-200 disabled:text-ink-muted ${error ? 'border-wein-700' : 'border-line-strong focus:border-tanne-700'}`}
                 {...props}
             />
             {hint && !error && (
@@ -85,7 +120,7 @@ export function Notice({tone, children}: { tone: 'error' | 'success' | 'info'; c
     )
 }
 
-const control = 'block w-full rounded-[10px] border bg-paper-000 px-3 text-base outline-none focus:ring-2 focus:ring-tanne-700/30 disabled:bg-paper-200 disabled:text-ink-muted'
+const control = 'block w-full rounded-xl border-[1.5px] bg-paper-000 px-3.5 text-base outline-none placeholder:text-ink-muted/70 focus:ring-4 focus:ring-gold-500/35 disabled:bg-paper-200 disabled:text-ink-muted'
 
 type TextAreaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string; error?: string }
 
@@ -159,5 +194,19 @@ export function Divider() {
             <img src={starUrl} alt="" className="size-5"/>
             <span className="h-px flex-1 bg-line"/>
         </div>
+    )
+}
+
+const avatarTones = ['bg-tanne-100 text-tanne-900', 'bg-wein-100 text-wein-800', 'bg-gold-100 text-gold-700']
+
+/** Initials in a coloured disc. The colour follows the name, so a person keeps theirs. */
+export function Avatar({firstName, lastName, muted = false}: { firstName: string; lastName: string; muted?: boolean }) {
+    const initials = `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase()
+    const tone = avatarTones[(firstName.length + lastName.length * 2) % avatarTones.length]
+    return (
+        <span aria-hidden="true"
+              className={`inline-flex size-11 shrink-0 items-center justify-center rounded-full font-display text-lg font-semibold ${muted ? 'border border-dashed border-line-strong bg-paper-100 text-ink-muted' : tone}`}>
+            {initials}
+        </span>
     )
 }

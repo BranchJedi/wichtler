@@ -95,6 +95,7 @@ export const de = {
     home: {
         title: 'Wichtelgruppen',
         greeting: (firstName: string) => `Hallo ${firstName}`,
+        summary: (count: number) => (count === 0 ? 'Zeit für die erste Wichtelrunde.' : count === 1 ? 'Du bist in einer Wichtelrunde dabei.' : `Du bist in ${count} Wichtelrunden dabei.`),
         empty: 'Du bist noch in keiner Wichtelgruppe.',
         emptyHint: 'Erstelle eine Gruppe und lade deine Leute ein.',
         emptyAll: 'Es gibt noch keine Wichtelgruppen.',
@@ -108,6 +109,8 @@ export const de = {
         status: {open: 'Offen', ready: 'Bereit zur Auslosung', drawn: 'Ausgelost'},
         role: {owner: 'Gruppenadmin', member: 'Teilnehmer', admin: 'Admin-Ansicht'},
         participants: (count: number) => (count === 1 ? '1 Teilnehmer' : `${count} Teilnehmer`),
+        until: (days: number) => (days > 1 ? `in ${days} Tagen` : days === 1 ? 'morgen' : days === 0 ? 'heute' : 'vorbei'),
+        organizedBy: 'Organisiert von',
         eventDate: 'Wichteldatum',
         budget: 'Budget',
         noBudget: 'Kein Budget festgelegt',
@@ -119,7 +122,6 @@ export const de = {
         delete: 'Löschen',
         back: 'Alle Gruppen',
         notFound: 'Diese Wichtelgruppe gibt es nicht oder du bist kein Mitglied.',
-        manageTitle: 'Verwaltung',
         deleteLockedHint: 'Die Gruppe ist ausgelost. Lösche zuerst die Auslosung, um die Gruppe löschen zu können.',
     },
     groupForm: {

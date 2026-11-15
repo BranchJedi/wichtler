@@ -9,7 +9,7 @@ import {
     useIncludeMember,
 } from '../api/generated/exclusions/exclusions'
 import type {ExclusionStateResponse, GroupResponse} from '../api/generated/model'
-import {Badge, Button, Card, Notice} from '../components/ui'
+import {Avatar, Badge, Button, Card, Notice} from '../components/ui'
 import {de} from '../i18n/de'
 
 const t = de.exclusions
@@ -32,7 +32,7 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
     const failure = exclude.error ?? include.error
 
     return (
-        <Card title={t.title}>
+        <Card title={t.title} feature="exclusions">
             <p className="text-sm text-ink-muted">{t.intro}</p>
 
             {state.isPending && <p role="status" className="mt-3 text-ink-muted">{de.app.loading}</p>}
@@ -67,8 +67,10 @@ export function ExclusionsCard({group}: { group: GroupResponse }) {
                                 const memberId = String(candidate.memberId)
                                 return (
                                     <li key={candidate.memberId} className="flex flex-wrap items-center gap-3 py-3">
-                                        <div className="mr-auto">
-                                            <p className="font-medium">
+                                        <Avatar firstName={candidate.firstName} lastName={candidate.lastName}
+                                                muted={candidate.excluded}/>
+                                        <div className={`mr-auto ${candidate.excluded ? 'line-through decoration-wein-700 decoration-2' : ''}`}>
+                                            <p className="font-semibold">
                                                 {candidate.firstName} {candidate.lastName}
                                             </p>
                                             <p className="text-sm text-ink-muted">{candidate.username}</p>

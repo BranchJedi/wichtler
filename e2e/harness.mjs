@@ -86,7 +86,10 @@ export async function start(base, out, port = 9334) {
   await send('Page.addScriptToEvaluateOnNewDocument', {
     source: `window.__csp = []; document.addEventListener('securitypolicyviolation', (e) => window.__csp.push(e.violatedDirective + ' blocked ' + (e.blockedURI || 'inline') + ' on ' + location.pathname))`,
   })
-  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true })
+  // A phone by default; E2E_VIEWPORT=1600x2400 runs the same flows on a desktop-sized screen.
+  const [width, height] = (process.env.E2E_VIEWPORT ?? '390x844').split('x').map(Number)
+  const mobile = width < 600
+  await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: mobile ? 2 : 1, mobile })
 
   const results = []
   const cspViolations = []

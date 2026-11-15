@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest'
-import {formatBudget, formatEventDate, groupRole, groupStatus} from './format'
+import {daysUntil, formatBudget, formatEventDate, groupRole, groupStatus} from './format'
 
 // Intl output uses narrow no-break spaces in places; compare on plain spaces.
 const plain = (text: string) => text.replace(/[  ]/g, ' ')
@@ -40,5 +40,13 @@ describe('groupRole', () => {
         expect(groupRole({isOwner: true, isMember: true}).label).toBe('Gruppenadmin')
         expect(groupRole({isOwner: false, isMember: true}).label).toBe('Teilnehmer')
         expect(groupRole({isOwner: false, isMember: false})).toEqual({label: 'Admin-Ansicht', tone: 'admin'})
+    })
+})
+
+describe('daysUntil', () => {
+    it('counts whole days regardless of the time of day', () => {
+        expect(daysUntil('2026-12-24', new Date(2026, 10, 15, 23, 50))).toBe(39)
+        expect(daysUntil('2026-11-15', new Date(2026, 10, 15, 8))).toBe(0)
+        expect(daysUntil('2026-11-14', new Date(2026, 10, 15))).toBe(-1)
     })
 })

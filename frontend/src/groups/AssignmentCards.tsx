@@ -10,7 +10,7 @@ const t = de.assignment
 /** The participant's own draw result, hidden until asked for. */
 export function MyAssignmentCard({group}: { group: GroupResponse }) {
     return (
-        <Card title={t.title}>
+        <Card title={t.title} feature="assignment">
             <p className="mb-4 text-sm text-ink-muted">{t.intro}</p>
             <AssignmentReveal load={() => getMyAssignment(String(group.id))} revealLabel={t.reveal} lead={t.givesTo} festive/>
         </Card>
@@ -24,7 +24,7 @@ export function AllAssignmentsCard({group}: { group: GroupResponse }) {
     const givers = members.data?.filter((member) => member.status === 'active') ?? []
 
     return (
-        <Card title={t.allTitle}>
+        <Card title={t.allTitle} feature="admin">
             <p className="text-sm text-ink-muted">{t.allIntro}</p>
             <ul className="mt-2 divide-y divide-line">
                 {givers.map((giver) => (

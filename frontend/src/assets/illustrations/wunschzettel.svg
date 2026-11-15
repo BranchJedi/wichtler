@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="Wunschzettel">
+  <path d="M22 10h50a8 8 0 0 1 8 8v64a8 8 0 0 1-8 8H30a8 8 0 0 1-8-8z" fill="#fffdf8" stroke="#c9a04a" stroke-width="3"/>
+  <path d="M22 10h50a8 8 0 0 1 8 8v6H22z" fill="#8c1c2b"/>
+  <path d="M38 40h30M38 54h30M38 68h20" stroke="#8a7a5e" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="30" cy="40" r="3" fill="#c9a04a"/><circle cx="30" cy="54" r="3" fill="#c9a04a"/><circle cx="30" cy="68" r="3" fill="#c9a04a"/>
+  <path d="M76 62l4 10 10 4-10 4-4 10-4-10-10-4 10-4z" fill="#c9a04a"/>
+</svg>

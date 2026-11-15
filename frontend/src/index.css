@@ -62,6 +62,23 @@
 }
 
 @layer components {
+    /* Candy-cane stripe: top edge of the header and of every overlay. */
+    .candy {
+        background: repeating-linear-gradient(135deg, var(--color-wein-700) 0 10px, var(--color-paper-000) 10px 20px);
+    }
+
+    /* Scalloped hem hanging below the header, like the edge of a tablecloth. */
+    .scallop {
+        height: 12px;
+        background: radial-gradient(circle at 12px 0, var(--color-wein-700) 11px, transparent 12px) 0 0 / 24px 12px repeat-x;
+    }
+
+    /* Paper sprinkled with fine dots, the ground of every signed-in page. */
+    .snow-paper {
+        background-image: radial-gradient(var(--color-line) 1.2px, transparent 1.4px);
+        background-size: 26px 26px;
+    }
+
     /* Uppercase line above a title. */
     .eyebrow {
         @apply text-xs font-bold tracking-[0.12em] text-gold-700 uppercase;

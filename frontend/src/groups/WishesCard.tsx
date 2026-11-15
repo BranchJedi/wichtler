@@ -18,6 +18,7 @@ import {ApiError} from '../api/http'
 import {ConfirmDialog} from '../components/ConfirmDialog'
 import {Overlay} from '../components/Overlay'
 import {Button, Card, Field, Notice, TextArea} from '../components/ui'
+import starUrl from '../assets/illustrations/stern.svg'
 import {de} from '../i18n/de'
 
 const t = de.wishes
@@ -64,7 +65,7 @@ export function WishesCard({group}: { group: GroupResponse }) {
     const missing = Math.max(0, group.minWishAmount - count)
 
     return (
-        <Card title={t.title}>
+        <Card title={t.title} feature="wishes">
             <p className="text-sm text-ink-muted">{t.intro}</p>
 
             {wishes.isPending && <p role="status" className="mt-3 text-ink-muted">{de.app.loading}</p>}
@@ -72,20 +73,32 @@ export function WishesCard({group}: { group: GroupResponse }) {
 
             {wishes.data && (
                 <>
-                    <div className="mt-4">
-                        <Notice tone={missing > 0 ? 'info' : 'success'}>
+                    {/* Progress as a row of stars: one per required wish, lit once it is written down. */}
+                    <div role="status"
+                         className={`mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border px-4 py-3 ${missing > 0 ? 'border-gold-700 bg-gold-100' : 'border-tanne-700 bg-tanne-50 text-tanne-700'}`}>
+                        {group.minWishAmount > 0 && (
+                            <span aria-hidden="true" className="flex gap-1">
+                                {Array.from({length: Math.min(group.minWishAmount, 12)}, (_, index) => (
+                                    <img key={index} src={starUrl} alt=""
+                                         className={`size-6 ${index < count ? '' : 'opacity-25 grayscale'}`}/>
+                                ))}
+                            </span>
+                        )}
+                        <span className="font-semibold">
                             {group.minWishAmount > 0 ? t.progress(count, group.minWishAmount) : t.progressDone(count)}
                             {missing > 0 && ` – ${t.missing(missing)}`}
-                        </Notice>
+                        </span>
                     </div>
 
                     {count === 0 ? (
-                        <p className="mt-4 text-ink">{t.empty}</p>
+                        <p className="mt-4 rounded-2xl border-2 border-dashed border-line-strong/60 px-4 py-6 text-center text-ink-muted">{t.empty}</p>
                     ) : (
-                        <ul className="mt-2 divide-y divide-line">
+                        <ul className="mt-4 space-y-3">
                             {wishes.data.map((wish) => (
-                                <li key={wish.id} className="py-3">
-                                    <p className="font-medium">{wish.title}</p>
+                                <li key={wish.id}
+                                    className="relative rounded-2xl border border-line bg-paper-100 py-3 pr-4 pl-11">
+                                    <img src={starUrl} alt="" className="absolute top-4 left-3.5 size-5"/>
+                                    <p className="font-display text-lg font-semibold">{wish.title}</p>
                                     {wish.description &&
                                         <p className="mt-1 whitespace-pre-line text-sm text-ink">{wish.description}</p>}
                                     {wish.url && (

@@ -20,9 +20,9 @@ function Check({done, children}: { done: boolean; children: string }) {
         <li className="flex items-start gap-3 py-2">
       <span
           aria-hidden="true"
-          className={`mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${done ? 'bg-tanne-700 text-on-dark' : 'bg-paper-200 text-ink-muted'}`}
+          className={`mt-0.5 inline-flex size-6 shrink-0 items-center justify-center rounded-full text-sm font-bold ${done ? 'bg-tanne-700 text-on-dark' : 'border border-dashed border-line-strong bg-paper-100 text-ink-muted'}`}
       >
-        {done ? '✓' : '·'}
+        {done ? '✓' : '…'}
       </span>
             <span>
         {children} <span className="sr-only">({done ? t.done : t.open})</span>
@@ -70,7 +70,7 @@ export function DrawStatusCard({group}: { group: GroupResponse }) {
     const undo = useDeleteDraw({mutation: {onSuccess: applied}})
 
     return (
-        <Card title={t.title}>
+        <Card title={t.title} feature="draw">
             {status.isPending && <p role="status" className="text-ink-muted">{de.app.loading}</p>}
             {status.isError && <Notice tone="error">{t.loadFailed}</Notice>}
 
@@ -122,6 +122,7 @@ export function DrawStatusCard({group}: { group: GroupResponse }) {
                     {status.data.pendingInvitations > 0 &&
                         <p className="text-sm text-ink-muted">{t.pendingInvitations(status.data.pendingInvitations)}</p>}
                     <Button
+                        variant="festive"
                         disabled={!status.data.drawable}
                         onClick={() => {
                             start.reset()

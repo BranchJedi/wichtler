@@ -170,14 +170,14 @@ function GroupForm({group, onDone, onSaved}: {
                 {...register('minWishAmount', {valueAsNumber: true})}
             />
 
-            <fieldset className="rounded-lg border border-line p-4" disabled={locked}>
+            <fieldset className="rounded-2xl border-2 border-dashed border-gold-700/50 bg-gold-100/50 p-4" disabled={locked}>
                 <label className="flex min-h-11 items-center gap-3 text-sm font-medium text-ink">
                     <input type="checkbox" className="size-5 accent-tanne-700" {...register('hasBudget')} />
                     {t.hasBudget}
                 </label>
                 {hasBudget && (
                     <div className="mt-2 space-y-4">
-                        <p className="text-center text-lg font-semibold" aria-live="polite">
+                        <p className="text-center font-display text-2xl font-semibold text-wein-700" aria-live="polite">
                             {t.budgetRange(formatMoney(budget[0], currency), formatMoney(budget[1], currency))}
                         </p>
                         <Controller
@@ -194,14 +194,14 @@ function GroupForm({group, onDone, onSaved}: {
                                     onValueChange={(value) => field.onChange([value[0], value[1]])}
                                     disabled={locked}
                                 >
-                                    <Slider.Track className="relative h-2 grow rounded-full bg-paper-200">
+                                    <Slider.Track className="relative h-2.5 grow rounded-full bg-paper-000 ring-1 ring-line-strong">
                                         <Slider.Range className="absolute h-full rounded-full bg-tanne-700"/>
                                     </Slider.Track>
                                     {[t.budgetMin, t.budgetMax].map((label) => (
                                         <Slider.Thumb
                                             key={label}
                                             aria-label={label}
-                                            className="block size-7 rounded-full border-2 border-tanne-700 bg-paper-000 shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700"
+                                            className="block size-8 rounded-full border-[3px] border-paper-000 bg-wein-700 shadow-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tanne-700"
                                         />
                                     ))}
                                 </Slider.Root>

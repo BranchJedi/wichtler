@@ -128,7 +128,7 @@ try {
     })()`)
     if (statuses !== '403,403,403,403') throw new Error('assignment endpoint for group admin: ' + statuses)
     await wait('locks', `__t.has('Die Teilnehmerliste ist gesperrt.') && __t.has('Ausschlüsse können nicht mehr geändert werden.') && __t.has('Auch du als Gruppenadmin siehst nur deinen eigenen Wichtel.') && !__t.has('Per Username einladen')`)
-    const deleteDisabled = await js(`[...${card('Verwaltung')}.querySelectorAll('button')].find((b) => b.textContent === 'Löschen').disabled`)
+    const deleteDisabled = await js(`[...document.querySelector('h1').closest('header').querySelectorAll('button')].find((b) => b.textContent === 'Löschen').disabled`)
     if (!deleteDisabled) throw new Error('group can still be deleted')
   })
 

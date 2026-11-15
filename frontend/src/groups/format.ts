@@ -41,3 +41,10 @@ export function groupRole(group: Pick<GroupResponse, 'isOwner' | 'isMember'>): {
     if (group.isMember) return {label: de.group.role.member, tone: 'neutral'}
     return {label: de.group.role.admin, tone: 'admin'}
 }
+
+/** Whole days from today until an ISO date (YYYY-MM-DD); negative once it has passed. */
+export function daysUntil(isoDate: string, today: Date = new Date()): number {
+    const [year, month, day] = isoDate.split('-').map(Number)
+    const from = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+    return Math.round((Date.UTC(year, month - 1, day) - from) / 86_400_000)
+}

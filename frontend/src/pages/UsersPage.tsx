@@ -11,7 +11,7 @@ import {nameSchema, usernameSchema} from '../auth/schemas'
 import {useSession} from '../auth/session'
 import {ConfirmDialog} from '../components/ConfirmDialog'
 import {Overlay} from '../components/Overlay'
-import {Badge, Button, Card, Field, Notice} from '../components/ui'
+import {Avatar, Badge, Button, Card, Field, Notice} from '../components/ui'
 import {de} from '../i18n/de'
 
 const t = de.users
@@ -47,8 +47,8 @@ export function UsersPage() {
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-3xl font-semibold">{t.title}</h1>
-                <p className="mt-1 text-sm text-ink-muted">{t.intro}</p>
+                <h1 className="text-4xl font-semibold">{t.title}</h1>
+                <p className="mt-1 max-w-prose text-ink-muted">{t.intro}</p>
             </div>
 
             <Card>
@@ -66,11 +66,12 @@ export function UsersPage() {
                 {users.isError && <div className="mt-4"><Notice tone="error">{t.loadFailed}</Notice></div>}
                 {users.data?.length === 0 && <p className="mt-4 text-ink">{t.empty}</p>}
 
-                <ul className="mt-2 divide-y divide-line">
+                <ul className="mt-4 grid gap-3 lg:grid-cols-2 min-[1700px]:grid-cols-3">
                     {users.data?.map((user) => (
-                        <li key={user.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 py-3">
+                        <li key={user.id} className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl border border-line bg-paper-100 p-3">
+                            <Avatar firstName={user.firstName} lastName={user.lastName}/>
                             <div className="mr-auto min-w-0">
-                                <p className="font-medium">{fullName(user)}</p>
+                                <p className="font-semibold">{fullName(user)}</p>
                                 <p className="text-sm text-ink-muted">{user.username}</p>
                             </div>
                             {user.isAdmin && <Badge tone="done">{t.adminBadge}</Badge>}

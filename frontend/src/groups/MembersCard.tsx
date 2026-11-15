@@ -18,7 +18,7 @@ import type {GroupResponse, MemberResponse} from '../api/generated/model'
 import {ApiError} from '../api/http'
 import {errorMessage} from '../api/errors'
 import {ConfirmDialog} from '../components/ConfirmDialog'
-import {Badge, Button, Card, Field, Notice} from '../components/ui'
+import {Avatar, Badge, Button, Card, Field, Notice} from '../components/ui'
 import {de} from '../i18n/de'
 
 const t = de.members
@@ -65,7 +65,7 @@ export function MembersCard({group}: { group: GroupResponse }) {
     const canLeave = group.isMember && !group.isOwner && !group.isDrawed
 
     return (
-        <Card title={t.title}>
+        <Card title={t.title} feature="members">
             {members.isPending && <p role="status" className="text-ink-muted">{de.app.loading}</p>}
             {members.isError && <Notice tone="error">{t.loadFailed}</Notice>}
             {update.isError && <div className="mb-3"><Notice tone="error">{errorMessage(update.error)}</Notice></div>}
@@ -74,8 +74,10 @@ export function MembersCard({group}: { group: GroupResponse }) {
                 {members.data?.map((member) => (
                     <li key={member.id}
                         className={`flex flex-wrap items-center gap-x-3 gap-y-2 py-3 ${member.status === 'active' ? '' : 'text-ink-muted'}`}>
+                        <Avatar firstName={member.firstName} lastName={member.lastName}
+                                muted={member.status !== 'active'}/>
                         <div className="mr-auto min-w-0">
-                            <p className="font-medium">
+                            <p className="font-semibold">
                                 {fullName(member)}
                                 {member.isMe && <span className="font-normal text-ink-muted"> ({t.you})</span>}
                             </p>
@@ -207,8 +209,8 @@ function InviteSection({groupId, onInvited}: { groupId: string; onInvited: () =>
     }
 
     return (
-        <div className="mt-4 space-y-5 border-t border-line pt-4">
-            <h3 className="font-semibold">{ti.title}</h3>
+        <div className="mt-5 space-y-5 rounded-2xl border-2 border-dashed border-tanne-700/40 bg-tanne-50 p-4">
+            <h3 className="text-lg font-semibold text-tanne-900">{ti.title}</h3>
 
             <form
                 className="flex flex-col gap-2 sm:flex-row sm:items-start"

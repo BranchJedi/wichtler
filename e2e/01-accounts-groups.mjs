@@ -19,7 +19,7 @@ try {
   await step('registration shows client-side validation', async () => {
     await goto('/registrieren')
     await js(`(__t.fill('Vorname', 'E2E'), __t.fill('Nachname', 'Test'), __t.fill('Username', 'x'), __t.fill('Passwort', 'kurz'), __t.fill('Passwort wiederholen', 'anders'), __t.click('Registrieren'))`)
-    await wait('field errors', `__t.text().includes('mindestens 10 Zeichen lang') && __t.text().includes('stimmen nicht überein') && __t.text().includes('3 bis 30 Zeichen lang sein')`)
+    await wait('field errors', `__t.text().includes('mindestens 6 Zeichen lang') && __t.text().includes('stimmen nicht überein') && __t.text().includes('3 bis 30 Zeichen lang sein')`)
   })
 
   await step('registration signs in and lands on the overview', async () => {
